@@ -110,7 +110,7 @@ The engine turns a chord plus five performance values (voicing, inversion, top v
 
 ### Generator and randomizers
 
-- **Pads** (`makeChord`): Key and Mode, Harmony (diatonic → borrowed → secondary dominants → tritone subs and chromatic mediants) and Complexity (triads → extended). Locked pads are skipped.
+- **Pads** (`makeChord`): Key and Mode, Harmony (diatonic → borrowed → secondary dominants → tritone subs and chromatic mediants) and Complexity (triads → extended). Locked pads are skipped. No identical chord may appear on two pads (shared roots are fine), including single-pad rolls and locked pads. When the usual picks run out, `uniqueFallback` widens: other diatonic qualities, sus2/sus4, richer diatonic chords, chromatic ones, then anything.
 - **Die amount for pads** (`rollPads`):
   - 97% or more regenerates every unlocked pad.
   - Below that, each pad changes with probability 0.2 + 0.8a.
@@ -140,7 +140,10 @@ Two stackable layers, each with one of four engines. Up to 6 chord notes, plus a
 - **Envelope behaviour:** envelopes retrigger on every chord change, starting from their current level so pads don't dip, and on every performer hit. Changing octave or FM ratio re-points the pitch without retriggering; doing it by rebuilding caused glitches in the prototype.
 - **Global:**
   - Glide time and spread.
-  - Width pans the notes by pitch rank, lowest left to highest right, and updates live.
+  - Width sets how far notes spread; a setting picks how they're placed, and positions glide along with the notes:
+    - **Random:** each chord spreads over evenly spaced, jittered slots in shuffled order, so notes never bunch up or lean to one side. A held note keeps its spot and glides to a new one at the chord's glide rate.
+    - **Low left / Low right:** by pitch rank, lowest note at one side.
+    - **Low centre:** the lowest note centred, higher notes alternating right and left, further out as they rise.
   - Reverb, bend range (0–100 cents) and volume.
 - **Presets:** five per engine. Analog: Mellow pad (the default sound), Warm keys, Bright brass, Soft pluck, Dark drone. Wavetable: Glass pad, Vowel sweep, Organ, Hollow keys, Digital shimmer. FM: E-piano, Bell, Glass keys, Soft FM pad, Metal pluck. Strings: Ensemble, Solina, Slow strings, Bright section, Choir. Values are in `PRESETS`.
 - **Layer randomizer:** a Character setting (Any, Pad, Keys, Pluck, Bright, Dark) sets ranges for filter and envelope values (`CHAR`). The die amount blends from the current values toward random ones, with an effective amount of 0.15 + 0.85a.
@@ -159,14 +162,14 @@ The screen splits in two. The top half is fixed and is where you play. The botto
 ### Layout
 
 - **Top, fixed:**
-  - A title bar with undo, redo, Hold and settings.
-  - A voice-trace scope, about 70 pt tall, that draws each voice's pitch over the last 3.5 s.
+  - A title bar with the name, the beat metronome and settings.
+  - A voice-trace scope, about 70 pt tall, that draws each voice's pitch over the last 3.5 s. It collapses to a slim bar with a chevron (remembered between sessions).
   - The 3×3 pads, about 31% of the screen height.
-  - A row with the pencil button and the Generate die slider.
+  - A toolbar: pencil and Hold, a short Generate die slider in the middle, undo and redo.
 - **Bottom panes:** swiped or tapped from a tab strip.
   - **Chords:** Key, Mode, Harmony, Complexity.
   - **Progression:** slot grid, play/stop, clear (with confirmation), Randomize die slider, BPM, Audio and MIDI export.
-  - **Play:** vertical Style, Inversion, Voicing and Top voice faders, then Rhythm, Gate, Accent, Swing, Notes, Broken and the arp controls.
+  - **Play:** horizontal Style and Top voice faders (the same size as Rhythm), Inversion and Voicing knobs, and the strum strip; then Rhythm, and knobs for Gate, Accent, Swing, Notes, Broken and the arp's mode, rate and octaves.
   - **Sound:** Layer A/B, preset, engine, filter and envelope knobs, glide and output knobs, Character + Randomize die slider.
 - **iPad landscape:** the pads on the left, the panes in a column on the right.
 
@@ -181,7 +184,7 @@ The screen splits in two. The top half is fixed and is where you play. The botto
   - The editor grows out of the pad into a centred card.
   - It shows the chord name (tap to hear it), the voiced notes, root and quality chips, and Clear.
 - **Die slider:**
-  - Drag the die right, or tap the track, to roll by that amount.
+  - Drag the die right, or tap the track, to roll by that amount. The die rolls as it's dragged and tumbles home on release. Only a clean tap on the track rolls; a touch that moves (a scroll) does nothing.
   - Hold the die and tap a pad or slot to roll just that one. On a pointer device, tap the die to arm it first.
   - Targets glow while the die is in use, and whatever changed flashes.
 - **Progression slots:**
@@ -190,7 +193,9 @@ The screen splits in two. The top half is fixed and is where you play. The botto
   - Tap a slot to play from it.
   - Empty slots between chords hold the earlier chord and merge into its tile.
   - A new row of 3 appears once the last row fills.
-- **Faders:** double-tap resets. The style slider has a detent at each style, and Top voice has one at centre.
+- **Faders:** double-tap resets. The style slider has a detent at each style, and Top voice has one at centre. Horizontal faders keep the whole touch: a mostly vertical move scrolls the pane, anything else drags (the browser cancelling these drags made Harmony and Complexity look stuck).
+- **Strum strip:** slide across to play the current chord's voiced notes, low to high, repeated over 1–4 octaves; cells redraw on every chord change. While it's touched, the chord voices go quiet and the performer pauses; strummed notes ring until the finger lifts. Settings choose the direction, range, timing (free, 1/16, or the arp rate, sampling the cell under the finger), whether holding still repeats the note, and whether the cross axis sets brightness.
+- **Preset:** tap to open the list grouped by engine; drag still steps through it.
 - **Knobs:** drag vertically. Knobs for choices (waves, tables, filter type, engine) step through them and show the current one.
 - **Haptics (new on iOS):** a tick on fader detents, on knob steps for choices, and when a die roll lands.
 
@@ -198,7 +203,6 @@ The screen splits in two. The top half is fixed and is where you play. The botto
 
 | Setting | Options | Default |
 | --- | --- | --- |
-| Colours (Chords, Progression and Play panes / Sound pane) | Ember, Tide, Lilac, Rose, Brass, Frost | Ember / Lilac |
 | Styles on the style slider | Pad, Stabs, Broken, Arp (at least one) | All |
 | Inversion fader / Voicing fader | Change live, next chord | Live / live |
 | Fader glide times | Top voice, Inversion, Voicing (0–1.5 s) | 0.2 s each |
@@ -206,12 +210,14 @@ The screen splits in two. The top half is fixed and is where you play. The botto
 | Glide pairing | Nearest, random, farthest | Nearest |
 | Progression glide timing | Land on the beat, start on the beat | Land |
 | Gliding when Hold is off | Every chord, overlapping taps only | Every chord |
-| Finger movement on a pad | Vibrato, slide between pads | Vibrato |
+| Finger movement on a pad | Slide between pads, vibrato | Slide |
+| Width placement | Random, low left, low right, low centre | Low left |
+| Strum strip | Vertical, horizontal; 1–4 octaves; free, 1/16, arp rate; held cell silent or repeating; brightness across on/off | Vertical, 2 oct, 1/16, silent, off |
 | Smart inversions | Off, on | Off |
 | Arp & broken pattern on chord change | Keep place, restart | Keep place |
-| Degree names / visualizer | Show, hide | Show / show |
+| Degree names | Show, hide | Show |
 
-**Visual identity:** dark, instrument-like palettes. Type is Bricolage Grotesque for names and Martian Mono for labels and values. An orbiting edge glow marks edit and pick modes. Colour tokens for every palette are in the prototype's CSS.
+**Visual identity:** dark, instrument-like palettes, fixed per pane: Chords ember (orange), Progression rose (pink), Play lilac (purple), Sound tide (teal). The whole app blends between them as you swipe. Settings use knobs instead of sliders and smaller toggle text. Type is Bricolage Grotesque for names and Martian Mono for labels and values. An orbiting edge glow marks edit and pick modes. Colour tokens for every palette are in the prototype's CSS.
 
 ## Data model, persistence and undo
 
@@ -228,8 +234,9 @@ Project {
                       aA,aD,aS,aR, fA,fD,fS,fR, pAmt, pTime, e{engine params} },
           width, reverb, volume, bend }
 }
-Prefs { palettes, styles enabled, live inversion/voicing, fader glides, topVib,
-        glideMode, landMode, glideAll, slide, smartInv, arpReset, showDegree, showScope }
+Prefs { styles enabled, live inversion/voicing, fader glides, topVib, glideMode, landMode, glideAll,
+        slide, smartInv, arpReset, showDegree, scopeOpen, widthMode,
+        strumDir, strumOct, strumQ, strumRepeat, strumBright }
 Chord { r: 0-11, q: quality key }
 ```
 

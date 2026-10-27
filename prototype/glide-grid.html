@@ -3,7 +3,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Martian+Mono:wght@400;500&display=swap">
 <style>
-/* Layout: one-screen instrument. Fixed top: title bar, voice-trace scope, 3×3 pads, pencil + generate die. Below: four swipeable panes (Chords, Progression, Play, Sound). Wide screens put the panes beside the pads. */
+/* Layout: one-screen instrument. Fixed top: title bar, collapsible voice-trace scope, 3×3 pads, a toolbar (pencil, hold | die | undo, redo). Below: four swipeable panes (Chords, Progression, Play, Sound), each with its own palette that blends as you swipe. Wide screens put the panes beside the pads. */
 @property --bg{syntax:'<color>';inherits:true;initial-value:#0d1215}
 @property --surface{syntax:'<color>';inherits:true;initial-value:#141b1f}
 @property --pad{syntax:'<color>';inherits:true;initial-value:#1a2328}
@@ -23,13 +23,7 @@
   --glow:#ff9d78; --glow-ink:#2a120a; --queue:#8ed5c1;
   --display:'Bricolage Grotesque','Avenir Next','Segoe UI',system-ui,sans-serif;
   --mono:'Martian Mono',ui-monospace,'SF Mono',Menlo,Consolas,monospace;
-  transition:--bg .5s,--surface .5s,--pad .5s,--pad-2 .5s,--line .5s,--fg .5s,--muted .5s,--faint .5s,--glow .5s,--glow-ink .5s,--queue .5s;
 }
-:root[data-pal="tide"]{--bg:#0a1219;--surface:#101b24;--pad:#15232e;--pad-2:#1c2c39;--line:#263a49;--fg:#e2ecf0;--muted:#86a0ad;--faint:#4d6676;--glow:#6fd8d2;--glow-ink:#052221;--queue:#ffb38f}
-:root[data-pal="lilac"]{--bg:#110e17;--surface:#18141f;--pad:#1f1a29;--pad-2:#272033;--line:#352c44;--fg:#eee8f2;--muted:#9a90a8;--faint:#5f5570;--glow:#b9a4ff;--glow-ink:#170e30;--queue:#ffc59e}
-:root[data-pal="rose"]{--bg:#150d11;--surface:#1c1318;--pad:#24181f;--pad-2:#2d1e27;--line:#3d2934;--fg:#f2e6ea;--muted:#a8909b;--faint:#6e5662;--glow:#ff8fb4;--glow-ink:#2e0a17;--queue:#9fe0c9}
-:root[data-pal="brass"]{--bg:#13100b;--surface:#1a1610;--pad:#221c14;--pad-2:#2b241a;--line:#3a3122;--fg:#f1eadc;--muted:#a39880;--faint:#6c624d;--glow:#f4c15d;--glow-ink:#2b1e05;--queue:#9cc8ff}
-:root[data-pal="frost"]{--bg:#0b0f17;--surface:#11161f;--pad:#161c28;--pad-2:#1d2432;--line:#283245;--fg:#e6ecf5;--muted:#8e9ab0;--faint:#556178;--glow:#9cc8ff;--glow-ink:#0a1a30;--queue:#ffb38f}
 [hidden]{display:none!important}
 html,body{height:100%}
 body{background:var(--bg);color:var(--fg);font-family:var(--display);-webkit-font-smoothing:antialiased;overflow:hidden}
@@ -56,8 +50,17 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 .ibtn:disabled{opacity:.35;cursor:default}
 .ibtn svg{width:17px;height:17px}
 .ibtn.big{width:48px;height:46px}
+.toolbar .ibtn.mid{width:40px;height:46px}
+.toolbar .hold{height:46px}
 .ibtn.on{color:var(--glow-ink);background:var(--glow);border-color:var(--glow)}
-.scope{position:relative;height:70px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow:hidden}
+.scope{position:relative;height:70px;border-radius:12px;background:var(--surface);border:1px solid var(--line);overflow:hidden;transition:height .22s ease}
+.scope-tog{appearance:none;position:absolute;top:3px;right:3px;width:28px;height:22px;display:grid;place-items:center;padding:0;border:0;border-radius:8px;background:transparent;color:var(--faint);cursor:pointer;z-index:2}
+.scope-tog:hover{color:var(--fg)}
+.scope-tog svg{width:12px;height:12px;transition:transform .22s}
+.scope.collapsed{height:16px!important;cursor:pointer}
+.scope.collapsed canvas,.scope.collapsed #scopeChord,.scope.collapsed .scope-hint{visibility:hidden}
+.scope.collapsed .scope-tog{inset:0;width:100%;height:100%;top:0;right:0;border-radius:0}
+.scope.collapsed .scope-tog svg{transform:rotate(180deg)}
 .scope canvas{display:block;width:100%;height:100%}
 #scopeChord{position:absolute;top:6px;left:10px;font:600 13px/1.2 var(--display);pointer-events:none}
 .scope-hint{position:absolute;inset:0;display:grid;place-items:center;font:500 10px var(--mono);color:var(--muted);letter-spacing:.1em;text-transform:uppercase;pointer-events:none}
@@ -92,12 +95,14 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 @keyframes kflash{0%{background:color-mix(in oklab,var(--queue) 30%,transparent)}100%{background:transparent}}
 
 .toolbar{display:flex;gap:8px;align-items:center;min-width:0}
-.dslider{position:relative;flex:1;min-width:0;height:46px;border-radius:12px;background:var(--pad);border:1px solid var(--line);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;--x:0px;--rot:0deg}
+.dslider{position:relative;flex:1;min-width:0;height:46px;border-radius:12px;background:var(--pad);border:1px solid var(--line);touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer;--x:0px;--rot:0deg}
 .dslider .dfill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--x) + 44px);border-radius:11px;background:color-mix(in oklab,var(--glow) 16%,transparent);transition:width .45s cubic-bezier(.3,1.2,.5,1);pointer-events:none}
-.dslider .dlab{position:absolute;right:14px;top:50%;transform:translateY(-50%);font:500 11px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);pointer-events:none}
+.dslider .dlab{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:500 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);pointer-events:none;transition:opacity .15s}
+.dslider.dragging .dlab,.dslider.rolled .dlab{opacity:0}
+#padBar .dslider{max-width:230px;margin-inline:auto}
 .dslider .damt{position:absolute;left:56px;top:50%;transform:translateY(-50%);font:500 11px/1 var(--mono);color:var(--fg);pointer-events:none}
-.die{position:absolute;left:4px;top:4px;width:36px;height:36px;border-radius:10px;background:var(--glow);color:var(--glow-ink);display:grid;place-items:center;cursor:grab;transform:translateX(var(--x)) rotate(var(--rot));transition:transform .55s cubic-bezier(.3,1.2,.5,1)}
-.die svg{width:22px;height:22px}
+.die{position:absolute;left:4px;top:4px;width:36px;height:36px;border-radius:10px;background:var(--glow);color:var(--glow-ink);display:grid;place-items:center;cursor:grab;touch-action:none;transform:translateX(var(--x)) rotate(var(--rot));transition:transform .55s cubic-bezier(.3,1.2,.5,1)}
+.die svg{width:30px;height:30px}
 .dslider.dragging .die,.dslider.dragging .dfill{transition:none}
 .dslider.armed .die{box-shadow:0 0 0 3px var(--bg),0 0 0 5px var(--queue);background:var(--queue)}
 
@@ -125,7 +130,7 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 
 /* faders */
 .fader{position:relative;background:var(--pad);border:1px solid var(--line);border-radius:12px;overflow:hidden;cursor:pointer;user-select:none;-webkit-user-select:none;--p:.5;--lo:0;--hi:.5;min-width:0}
-.fader.h{height:42px;touch-action:pan-y}
+.fader.h{height:42px;touch-action:none}
 .fader.v{touch-action:none;height:100%}
 .ffill{position:absolute;background:color-mix(in oklab,var(--glow) 24%,transparent);pointer-events:none}
 .fader.h .ffill{top:0;bottom:0;left:calc(6px + var(--lo)*(100% - 12px));right:calc(100% - 6px - var(--hi)*(100% - 12px))}
@@ -151,7 +156,29 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 .fader.v .flab{bottom:11px}
 .fader.v .fval{top:11px}
 .fader.drag{border-color:var(--glow)}
-.vfaders{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;height:210px}
+/* play pane: performance faders beside (or above) the strum strip */
+.perf-lay{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+.perf-lay.v{grid-template-columns:minmax(0,1fr) 76px}
+.perf-main{display:grid;gap:8px;align-content:start;min-width:0}
+.strum{position:relative;border:1px solid var(--line);border-radius:12px;background:var(--pad);touch-action:none;overflow:hidden;user-select:none;-webkit-user-select:none;cursor:pointer;min-width:0}
+.perf-lay.h .strum{height:78px}
+.perf-lay.v .strum{min-height:190px}
+.strum-cells{position:absolute;inset:0;display:flex}
+.perf-lay.v .strum-cells{flex-direction:column-reverse}
+.scell{flex:1 1 0;min-width:0;min-height:0;display:grid;place-items:center;font:500 9px/1 var(--mono);color:var(--faint);border-left:1px solid var(--line);transition:background .12s}
+.perf-lay.v .scell{border-left:0;border-bottom:1px solid var(--line)}
+.scell:first-child{border-left:0;border-bottom:0}
+.perf-lay.h .scell.oct{border-left-color:var(--faint)}
+.perf-lay.v .scell.oct{border-bottom-color:var(--faint)}
+.scell.root{color:var(--muted)}
+.scell.ring{background:color-mix(in oklab,var(--glow) 16%,transparent)}
+.scell.on{background:color-mix(in oklab,var(--glow) 42%,transparent);color:var(--fg)}
+.strum.bright::after{content:'';position:absolute;inset:0;pointer-events:none;background:linear-gradient(to right,transparent,color-mix(in oklab,var(--fg) 7%,transparent))}
+.perf-lay.h .strum.bright::after{background:linear-gradient(to top,transparent,color-mix(in oklab,var(--fg) 7%,transparent))}
+.strum-hint{position:absolute;inset:0;display:grid;place-items:center;text-align:center;padding:8px;font:500 9.5px/1.4 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);pointer-events:none}
+.strum-lab{position:absolute;left:8px;top:6px;font:500 8.5px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--faint);pointer-events:none}
+.perf-lay.v .strum-lab{left:50%;top:6px;transform:translateX(-50%)}
+.strum.has-cells .strum-lab{display:none}
 .sq{display:flex;gap:3px}
 .sq i{width:9px;height:9px;border-radius:2px;border:1px solid var(--faint);transition:box-shadow .08s}
 .sq i.on{background:var(--glow);border-color:var(--glow)}
@@ -233,9 +260,14 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
 .checks{display:flex;flex-wrap:wrap;gap:8px}
 .check{display:inline-flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid var(--line);border-radius:10px;background:var(--pad);font-size:14px;cursor:pointer}
 .check input{accent-color:var(--glow);width:16px;height:16px;margin:0}
-.swatches{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
-.swatch{appearance:none;aspect-ratio:1;border-radius:10px;border:2px solid transparent;cursor:pointer;padding:0}
-.swatch[aria-pressed="true"]{border-color:var(--fg)}
+.sheet .setting .seg button{font-size:12px;padding:8px 4px}
+.sheet .check{font-size:12px;padding:7px 10px}
+.sheet .setting{gap:7px}
+.menu{position:fixed;z-index:40;box-sizing:border-box;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -12px #000;overflow-y:auto;padding:6px;display:grid;gap:2px;overscroll-behavior:contain}
+.menu h4{margin:8px 8px 4px;font:500 9.5px/1 var(--mono);letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.menu button{appearance:none;border:0;background:transparent;color:var(--fg);font:500 14px/1.2 var(--display);text-align:left;padding:9px 10px;border-radius:9px;cursor:pointer}
+.menu button:hover{background:var(--pad)}
+.menu button[aria-current="true"]{background:var(--pad-2);color:var(--glow)}
 .fgrid{display:grid;gap:8px}
 :focus-visible{outline:2px solid var(--queue);outline-offset:2px}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -246,9 +278,6 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
     <header>
       <div class="brand"><h1>Heather</h1><div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
       <div class="hdr-right">
-        <button type="button" class="ibtn" id="undoBtn" aria-label="Undo" disabled></button>
-        <button type="button" class="ibtn" id="redoBtn" aria-label="Redo" disabled></button>
-        <button type="button" class="hold" id="latch" aria-pressed="true">Hold</button>
         <button type="button" class="ibtn" id="gearBtn" aria-label="Settings"></button>
       </div>
     </header>
@@ -256,10 +285,15 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
       <canvas id="scope"></canvas>
       <span id="scopeChord"></span>
       <div class="scope-hint" id="scopeHint">Tap a pad to start the synth</div>
+      <button type="button" class="scope-tog" id="scopeTog" aria-label="Hide visualizer" aria-expanded="true"></button>
     </div>
     <div class="grid" id="grid"></div>
     <div class="toolbar" id="padBar">
       <button type="button" class="ibtn big" id="pencil" aria-label="Edit pads (hold and tap a pad for one edit)"></button>
+      <button type="button" class="hold" id="latch" aria-pressed="true">Hold</button>
+      <div id="padDieHost" style="flex:1;min-width:0;display:flex"></div>
+      <button type="button" class="ibtn mid" id="undoBtn" aria-label="Undo" disabled></button>
+      <button type="button" class="ibtn mid" id="redoBtn" aria-label="Redo" disabled></button>
     </div>
   </section>
 
@@ -306,13 +340,24 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
 
       <div class="pane" data-pane="play">
         <div class="group">
-          <div class="vfaders"><div id="vsStyle"></div><div id="vsInv"></div><div id="vsVoice"></div><div id="vsTop"></div></div>
+          <div class="perf-lay v" id="perfLay">
+            <div class="perf-main">
+              <div id="hStyle"></div>
+              <div id="hTop"></div>
+              <div class="knobs" id="shapeKnobs" style="--n:2"></div>
+            </div>
+            <div class="strum" id="strum" aria-label="Strum strip: slide across to play the current chord's notes">
+              <div class="strum-cells" id="strumCells"></div>
+              <span class="strum-lab">Strum</span>
+              <div class="strum-hint" id="strumHint">Play a pad, then strum</div>
+            </div>
+          </div>
         </div>
         <div class="group">
           <h2>Playing style</h2>
           <div id="perfH"></div>
-          <div class="knobs" id="perfKnobs" style="--n:3"></div>
-          <div class="params"><div id="pNotes"></div><div id="pBroken"></div><div id="pRate"></div><div id="pOct"></div><div id="pArp" class="wide"></div></div>
+          <div class="knobs" id="perfKnobs" style="--n:5"></div>
+          <div class="sub"><h3>Arpeggiator</h3><div class="knobs" id="arpKnobs" style="--n:5"></div></div>
         </div>
       </div>
 
@@ -354,14 +399,12 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
       <h3 id="setTitle">Settings</h3>
       <button type="button" class="ibtn" id="setDone" aria-label="Close"></button>
     </div>
-    <div class="setting"><div class="eyebrow">Colours for Chords, Progression &amp; Play</div><div class="swatches" data-key="palPlay"></div></div>
-    <div class="setting"><div class="eyebrow">Colours for Sound</div><div class="swatches" data-key="palSound"></div></div>
     <div class="setting"><div class="eyebrow">Styles on the style slider</div><div class="checks" id="styleChecks"></div></div>
     <div class="setting"><div class="eyebrow">Inversion fader</div>
       <div class="seg" data-key="liveInv"><button type="button" data-v="1">Change live</button><button type="button" data-v="0">Next chord</button></div></div>
     <div class="setting"><div class="eyebrow">Voicing fader</div>
       <div class="seg" data-key="liveVoice"><button type="button" data-v="1">Change live</button><button type="button" data-v="0">Next chord</button></div></div>
-    <div class="setting"><div class="eyebrow">Fader glide times</div><div class="fgrid" id="glideFaders"></div></div>
+    <div class="setting"><div class="eyebrow">Fader glide times</div><div class="knobs" id="glideKnobs" style="--n:5"></div></div>
     <div class="setting"><div class="eyebrow">Top voice fader</div>
       <div class="seg" data-key="topVib"><button type="button" data-v="0">Notes</button><button type="button" data-v="1">Notes + vibrato</button></div></div>
     <div class="setting"><div class="eyebrow">Glide pairing</div>
@@ -371,15 +414,25 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
     <div class="setting"><div class="eyebrow">Gliding when Hold is off</div>
       <div class="seg" data-key="glideAll"><button type="button" data-v="1">Every chord</button><button type="button" data-v="0">Overlapping taps only</button></div></div>
     <div class="setting"><div class="eyebrow">Finger movement on a pad</div>
-      <div class="seg" data-key="slide"><button type="button" data-v="0">Vibrato</button><button type="button" data-v="1">Slide between pads</button></div></div>
+      <div class="seg" data-key="slide"><button type="button" data-v="1">Slide between pads</button><button type="button" data-v="0">Vibrato</button></div></div>
+    <div class="setting"><div class="eyebrow">Width: how notes are panned</div>
+      <div class="seg" data-key="widthMode"><button type="button" data-v="random">Random</button><button type="button" data-v="lr">Low left</button><button type="button" data-v="rl">Low right</button><button type="button" data-v="center">Low centre</button></div></div>
+    <div class="setting"><div class="eyebrow">Strum strip direction</div>
+      <div class="seg" data-key="strumDir"><button type="button" data-v="v">Vertical</button><button type="button" data-v="h">Horizontal</button></div></div>
+    <div class="setting"><div class="eyebrow">Strum strip range</div>
+      <div class="seg" data-key="strumOct"><button type="button" data-v="1">1 oct</button><button type="button" data-v="2">2 oct</button><button type="button" data-v="3">3 oct</button><button type="button" data-v="4">4 oct</button></div></div>
+    <div class="setting"><div class="eyebrow">Strum timing</div>
+      <div class="seg" data-key="strumQ"><button type="button" data-v="free">Free</button><button type="button" data-v="16">1/16 notes</button><button type="button" data-v="arp">Arp rate</button></div></div>
+    <div class="setting"><div class="eyebrow">Holding still on a strum cell</div>
+      <div class="seg" data-key="strumRepeat"><button type="button" data-v="0">Silent</button><button type="button" data-v="1">Repeat the note</button></div></div>
+    <div class="setting"><div class="eyebrow">Brightness across the strum strip</div>
+      <div class="seg" data-key="strumBright"><button type="button" data-v="0">Off</button><button type="button" data-v="1">On</button></div></div>
     <div class="setting"><div class="eyebrow">Smart inversions</div>
       <div class="seg" data-key="smartInv"><button type="button" data-v="0">Off</button><button type="button" data-v="1">On</button></div></div>
     <div class="setting"><div class="eyebrow">Arp &amp; broken pattern on chord change</div>
       <div class="seg" data-key="arpReset"><button type="button" data-v="0">Keep place</button><button type="button" data-v="1">Restart</button></div></div>
     <div class="setting"><div class="eyebrow">Degree names on pads</div>
       <div class="seg" data-key="showDegree"><button type="button" data-v="1">Show</button><button type="button" data-v="0">Hide</button></div></div>
-    <div class="setting"><div class="eyebrow">Visualizer</div>
-      <div class="seg" data-key="showScope"><button type="button" data-v="1">Show</button><button type="button" data-v="0">Hide</button></div></div>
   </div>
 </div>
 
@@ -399,7 +452,8 @@ const REDUCED = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce
 function flash(els){ els.forEach(el => { if (!el) return; el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 950); }); }
 
 const ICON = {
-  die:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="7" cy="7" r="2" fill="currentColor"/><circle cx="17" cy="7" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="7" cy="17" r="2" fill="currentColor"/><circle cx="17" cy="17" r="2" fill="currentColor"/></svg>',
+  die:'<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="5.6" cy="5.6" r="2.15" fill="currentColor"/><circle cx="18.4" cy="5.6" r="2.15" fill="currentColor"/><circle cx="12" cy="12" r="2.15" fill="currentColor"/><circle cx="5.6" cy="18.4" r="2.15" fill="currentColor"/><circle cx="18.4" cy="18.4" r="2.15" fill="currentColor"/></svg>',
+  chev:'<svg viewBox="0 0 12 12" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2.5 7.5 6 4l3.5 3.5"/></svg>',
   lock:'<svg viewBox="0 0 16 16" aria-hidden="true"><rect x="3.2" y="7" width="9.6" height="7" rx="1.5" fill="currentColor"/><path class="shut" d="M5.5 7V5a2.5 2.5 0 0 1 5 0v2" fill="none" stroke="currentColor" stroke-width="1.6"/><path class="open" d="M5.5 7V5a2.5 2.5 0 0 1 5 0" fill="none" stroke="currentColor" stroke-width="1.6" transform="translate(0 -1.2)"/></svg>',
   undo:'<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5.5 3 2.5 6l3 3"/><path d="M2.5 6h7a4 4 0 0 1 0 8H7"/></svg>',
   redo:'<svg viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10.5 3l3 3-3 3"/><path d="M13.5 6h-7a4 4 0 0 0 0 8H9"/></svg>',
@@ -472,9 +526,9 @@ const PATS = (() => {
   return out.map(o => o.bits);
 })();
 const RATES = [[24,'1/4'],[12,'1/8'],[8,'1/8T'],[6,'1/16'],[4,'1/16T'],[3,'1/32']];
-const ARP_MODES = [['up','Up'],['down','Down'],['updown','Up-down'],['converge','Converge'],['diverge','Diverge'],['random','Random'],['other','Random other'],['other2','Random other other'],['rloop','Random loop']];
+const ARP_MODES = [['up','Up'],['down','Down'],['updown','Up-down'],['converge','Converge'],['diverge','Diverge'],['random','Random'],['other','Rnd other'],['other2','Rnd other²'],['rloop','Rnd loop']];
 const NOTES = [['all','All'],['upper','Upper'],['outer','Outer'],['bass','Bass'],['top','Top']];
-const BROKEN = [['bassup','Bass / rest'],['oddeven','Odd / even'],['halves','Low / high'],['outer','Outer / inner'],['three','Three groups'],['overlap','Overlapping'],['alberti','Alberti'],['rgroup','Random groups']];
+const BROKEN = [['bassup','Bass/rest'],['oddeven','Odd/even'],['halves','Low/high'],['outer','Out/in'],['three','Three'],['overlap','Overlap'],['alberti','Alberti'],['rgroup','Rnd groups']];
 
 /* ---------- Synth tables ---------- */
 const WAVES = [['sine','Sine'],['triangle','Triangle'],['sawtooth','Saw'],['square','Square']];
@@ -535,30 +589,33 @@ function makeLayer(engine, name, extra){
   return clone({...LBASE, engine, preset:pr[0], ...pr[1], e:{...ENG_DEF[engine], ...(pr[1].e || {})}, ...(extra || {})});
 }
 const DEF_SYNTH = () => ({layers:[makeLayer('analog', 'Mellow pad'), makeLayer('strings', 'Ensemble', {level:0})], width:.7, reverb:.32, volume:.8, bend:50});
+// Each pane has its own palette (Chords ember, Progression rose, Play lilac, Sound tide); the whole app blends between them as you swipe
 const PAL = {
-  ember:{hue:16, bg:'#0d1215', glow:'#ff9d78', line:'#2a373e', faint:'#56656b'},
-  tide:{hue:176, bg:'#0a1219', glow:'#6fd8d2', line:'#263a49', faint:'#4d6676'},
-  lilac:{hue:255, bg:'#110e17', glow:'#b9a4ff', line:'#352c44', faint:'#5f5570'},
-  rose:{hue:340, bg:'#150d11', glow:'#ff8fb4', line:'#3d2934', faint:'#6e5662'},
-  brass:{hue:42, bg:'#13100b', glow:'#f4c15d', line:'#3a3122', faint:'#6c624d'},
-  frost:{hue:212, bg:'#0b0f17', glow:'#9cc8ff', line:'#283245', faint:'#556178'}
+  ember:{hue:16, bg:'#0d1215', surface:'#141b1f', pad:'#1a2328', 'pad-2':'#212c32', line:'#2a373e', fg:'#ece6dc', muted:'#8d999b', faint:'#56656b', glow:'#ff9d78', 'glow-ink':'#2a120a', queue:'#8ed5c1'},
+  rose:{hue:340, bg:'#150d11', surface:'#1c1318', pad:'#24181f', 'pad-2':'#2d1e27', line:'#3d2934', fg:'#f2e6ea', muted:'#a8909b', faint:'#6e5662', glow:'#ff8fb4', 'glow-ink':'#2e0a17', queue:'#9fe0c9'},
+  lilac:{hue:255, bg:'#110e17', surface:'#18141f', pad:'#1f1a29', 'pad-2':'#272033', line:'#352c44', fg:'#eee8f2', muted:'#9a90a8', faint:'#5f5570', glow:'#b9a4ff', 'glow-ink':'#170e30', queue:'#ffc59e'},
+  tide:{hue:176, bg:'#0a1219', surface:'#101b24', pad:'#15232e', 'pad-2':'#1c2c39', line:'#263a49', fg:'#e2ecf0', muted:'#86a0ad', faint:'#4d6676', glow:'#6fd8d2', 'glow-ink':'#052221', queue:'#ffb38f'}
 };
+const PANE_PAL = ['ember', 'rose', 'lilac', 'tide'];
 
 /* ---------- State ---------- */
 const DEF_PERF = {style:0, density:1, swing:0, gate:.6, accent:.5, notes:'all', broken:'bassup', arp:'up', rate:6, oct:1};
 const DEF_CELLS = [{r:0,q:'maj9'},{r:2,q:'m9'},{r:4,q:'m7'},{r:5,q:'maj7s11'},{r:7,q:'13'},{r:9,q:'m9'},{r:10,q:'69'},{r:4,q:'7b9'},{r:8,q:'maj7'}];
 const S = {cells:DEF_CELLS.map(c => ({...c})), locks:Array(9).fill(false), key:0, mode:'major', chroma:.3, complexity:.6,
   bpm:90, latch:true, glide:.35, dev:.3, voicing:.4, inversion:0, topVoice:0, prog:Array(9).fill(null), progLocks:Array(9).fill(false), pane:0,
-  glideAll:true, landMode:true, glideMode:'nearest', slide:false, smartInv:false, showScope:true, showDegree:true,
+  glideAll:true, landMode:true, glideMode:'nearest', slide:true, smartInv:false, scopeOpen:true, showDegree:true,
   topVib:false, liveInv:true, liveVoice:true, arpReset:false, glides:{top:.2, inv:.2, voice:.2},
-  styles:{pad:true, stab:true, broken:true, arp:true}, palPlay:'ember', palSound:'lilac',
+  styles:{pad:true, stab:true, broken:true, arp:true}, widthMode:'lr',
+  strumDir:'v', strumOct:2, strumQ:'16', strumRepeat:false, strumBright:false,
   rand:{cat:'any'}, synth:DEF_SYNTH(), perf:{...DEF_PERF}};
-const STORE = 'heather-v4';
+const STORE = 'heather-v5';
 try {
-  let d = JSON.parse(localStorage.getItem(STORE) || 'null');
+  let d = JSON.parse(localStorage.getItem(STORE) || 'null'), old = false;
+  if (!d){ d = JSON.parse(localStorage.getItem('heather-v4') || 'null'); old = !!d; }
   if (!d){
     d = JSON.parse(localStorage.getItem('heather-v3') || 'null');
     if (d){
+      old = true;
       if (d.synth && Array.isArray(d.synth.layers)) d.synth.layers.forEach(L => { if (L.on === false) L.level = 0; delete L.on; L.oct = clamp(L.oct || 0, -1, 1); });
       d.prog = (d.loopSteps || []).map(i => d.cells && d.cells[i] ? {...d.cells[i]} : null);
       d.progLocks = (d.loopLocks || []).slice();
@@ -566,6 +623,8 @@ try {
     }
   }
   if (d){
+    // v5: sliding between pads became the default, and the visualizer collapses from the main screen instead of a setting
+    if (old){ delete d.slide; if ('showScope' in d) d.scopeOpen = d.showScope !== false; }
     for (const k of Object.keys(S)) if (k in d && !['synth','perf','rand','glides','styles'].includes(k)) S[k] = d[k];
     if (d.synth && Array.isArray(d.synth.layers)) S.synth = {...DEF_SYNTH(), ...d.synth, layers:d.synth.layers.map((L, i) => ({...DEF_SYNTH().layers[i], ...L, e:{...ENG_DEF[L.engine || 'analog'], ...(L.e || {})}}))};
     S.perf = {...DEF_PERF, ...(d.perf || {})}; S.rand = {...S.rand, ...(d.rand || {})};
@@ -581,7 +640,10 @@ S.prog = S.prog.map(validChord);
 if (!Array.isArray(S.progLocks)) S.progLocks = [];
 if (!MODES[S.mode]) S.mode = 'major';
 if (!['nearest','random','far'].includes(S.glideMode)) S.glideMode = 'nearest';
-if (!PAL[S.palPlay]) S.palPlay = 'ember'; if (!PAL[S.palSound]) S.palSound = 'lilac';
+if (!['random','lr','rl','center'].includes(S.widthMode)) S.widthMode = 'lr';
+if (!['v','h'].includes(S.strumDir)) S.strumDir = 'v';
+if (!['free','16','arp'].includes(S.strumQ)) S.strumQ = '16';
+S.strumOct = clamp(Math.round(+S.strumOct || 2), 1, 4);
 if (!STYLE_KEYS.some(k => S.styles[k])) S.styles.pad = true;
 S.pane = clamp(S.pane | 0, 0, 3);
 S.glide = clamp(+S.glide || 0, 0, 1);
@@ -767,10 +829,28 @@ function makeChord(used, usedDeg, pool, tonic){
     if (tonic) cand = {r:key, sev:degChord(sc, 0).sev, dia:true, deg:0};
     else if (Math.random() < S.chroma * .9){ const p = pickChroma(pool); if (p) cand = {r:p.r, sev:p.sev, dia:false}; }
     if (!cand){ const d = weighted(degW.map((x, i) => usedDeg.has(i) ? x * .12 : x)); const c = degChord(sc, d); cand = {r:(key + c.r) % 12, sev:c.sev, dia:true, deg:d}; }
-    const lvl = clamp(Math.round(S.complexity * 3 + (Math.random() - .5) * 1.1), 0, 3);
+    const lvl = S.complexity < .08 ? 0 : clamp(Math.round(S.complexity * 3 + (Math.random() - .5) * 1.1), 0, 3);
     const q = chooseQuality(cand.sev, cand.r, lvl, cand.dia);
-    if (!used.has(cand.r + q) || tries === 7){ used.add(cand.r + q); if (cand.deg != null) usedDeg.add(cand.deg); return {r:cand.r, q}; }
+    if (!used.has(cand.r + q)){ used.add(cand.r + q); if (cand.deg != null) usedDeg.add(cand.deg); return {r:cand.r, q}; }
   }
+  const f = uniqueFallback(used); used.add(f.r + f.q); return f;
+}
+// No chord may appear on two pads. When the usual picks are all taken, widen step by step: other diatonic qualities at this
+// complexity (sus2 and sus4 included), then richer diatonic chords, then borrowed and chromatic ones, then anything at all.
+function uniqueFallback(used){
+  const sc = MODES[S.mode].s, key = S.key, set = new Set(sc.map(x => (key + x) % 12));
+  const fits = (r, q) => QUAL[q].iv.every(x => set.has((r + x) % 12));
+  const lvl = S.complexity < .08 ? 0 : clamp(Math.round(S.complexity * 3), 0, 3), free = c => !used.has(c.r + c.q);
+  const dia = sc.map((_, d) => { const c = degChord(sc, d); return {r:(key + c.r) % 12, sev:c.sev}; });
+  const atLevels = (L0, L1) => dia.flatMap(c => { const lad = LADDER[c.sev] || LADDER.maj; return lad.slice(L0, L1 + 1).flat().filter(q => fits(c.r, q)).map(q => ({r:c.r, q})); });
+  const sus = dia.flatMap(c => ['sus2', 'sus4'].filter(q => fits(c.r, q)).map(q => ({r:c.r, q})));
+  const tiers = [
+    atLevels(0, lvl), sus, atLevels(lvl + 1, 3),
+    chromaPool().map(p => ({r:p.r, q:chooseQuality(p.sev, p.r, lvl, false)})),
+    [...Array(12).keys()].flatMap(r => Object.keys(QUAL).map(q => ({r, q})))
+  ];
+  for (const t of tiers){ const c = t.filter(free); if (c.length) return {...pick(c)}; }
+  return {r:key, q:'maj'};
 }
 function generateAll(){
   const key = S.key, free = [...Array(9).keys()].filter(i => !S.locks[i]); if (!free.length) return;
@@ -794,8 +874,10 @@ function rollPads(a){
   free.forEach((i, n) => {
     if (!(Math.random() < pChange || (n === free.length - 1 && !changed))) return;
     const c = S.cells[i];
-    if (!c || Math.random() < pNew) S.cells[i] = generateOne(i);
-    else { const opts = FAMILY[famOf(c.q)].filter(q => q !== c.q); S.cells[i] = {r:c.r, q:opts.length ? pick(opts) : c.q}; }
+    const taken = new Set(S.cells.map((x, j) => j !== i && x ? x.r + x.q : null).filter(Boolean));
+    const opts = c ? FAMILY[famOf(c.q)].filter(q => q !== c.q && !taken.has(c.r + q)) : [];
+    if (!c || !opts.length || Math.random() < pNew) S.cells[i] = generateOne(i);
+    else S.cells[i] = {r:c.r, q:pick(opts)};
     changed++;
   });
 }
@@ -996,28 +1078,50 @@ function Engine(ctx, opt = {}){
   }
   const syncPitch = v => v.pitch.retarget(v.layers.filter(Boolean).flatMap(L => L.fparams));
   for (let i = 0; i < POOL; i++) voices.push(makeVoice(i));
+  // the strum strip plays its own voices, built the first time it's touched so exports don't pay for them
+  const svoices = [], SPOOL = 8;
+  const allV = () => svoices.length ? voices.concat(svoices) : voices;
+  const ensureSV = () => { if (!svoices.length) for (let i = 0; i < SPOOL; i++) svoices.push(makeVoice(POOL + i)); };
 
   function rebuildLayer(li){
     const t = now() + .01, fl = perfOn() ? perfFloor() : 1;
-    voices.forEach(v => {
+    allV().forEach(v => {
       if (v.layers[li]) destroyLayer(v.layers[li]);
       v.layers[li] = buildLayer(v, li); syncPitch(v);
-      if (v.layers[li] && v.state === 'on' && fl > 0) trig(v.layers[li], t, fl);
+      if (v.layers[li] && v.state === 'on' && fl > 0 && v.i < POOL && !sm.on) trig(v.layers[li], t, fl);
     });
   }
   function updateLayer(li){
     const P = S.synth.layers[li], t = now();
-    voices.forEach(v => { const L = v.layers[li]; if (L) updateLayerNodes(L, P, t, false); });
+    allV().forEach(v => { const L = v.layers[li]; if (L) updateLayerNodes(L, P, t, false); });
   }
-  function repitchLayer(li){ voices.forEach(v => { const L = v.layers[li]; if (L){ setMuls(L); syncPitch(v); } }); }
+  function repitchLayer(li){ allV().forEach(v => { const L = v.layers[li]; if (L){ setMuls(L); syncPitch(v); } }); }
   function applyGlobal(){
     const s = S.synth, t = now();
     dry.gain.setTargetAtTime(1 - s.reverb * .45, t, .03); wet.gain.setTargetAtTime(s.reverb * 1.3, t, .03); master.gain.setTargetAtTime(s.volume, t, .03);
     applyWidth();
   }
-  // Width spreads each chord's notes across the stereo field, lowest left to highest right; updates live
-  const panFor = (k, n) => n > 1 ? S.synth.width * ((k / (n - 1)) * 2 - 1) : 0;
-  function applyWidth(){ const t = now(); voices.forEach(v => { if (v.state !== 'free'){ v.panPos = panFor(v.k, v.n); v.pan.pan.setTargetAtTime(v.panPos, t, .03); } }); }
+  // Width spreads notes across the stereo field. Each voice keeps a unit position (panU, -1..1) that the Width amount scales live.
+  // Rank modes place notes by pitch order: low left, low right, or low in the centre with higher notes alternating outward.
+  // Random mode spreads a chord over evenly spaced, jittered slots in shuffled order, so notes never bunch or lean to one side.
+  function unitPan(k, n){
+    if (n < 2) return 0;
+    const m = S.widthMode;
+    if (m === 'rl') return 1 - 2 * k / (n - 1);
+    if (m === 'center'){ if (k === 0) return 0; const steps = Math.ceil((n - 1) / 2); return (k % 2 ? 1 : -1) * Math.ceil(k / 2) / steps; }
+    return 2 * k / (n - 1) - 1;
+  }
+  const randomPans = n => shuffle(Array.from({length:n}, (_, i) => n < 2 ? 0 : clamp(-1 + (2 * i + 1) / n + (Math.random() * 2 - 1) * .35 / n, -1, 1)));
+  const chordPans = n => S.widthMode === 'random' ? randomPans(n) : Array.from({length:n}, (_, k) => unitPan(k, n));
+  function applyWidth(remap){
+    const t = now();
+    if (remap){
+      const sl = curSlots(), u = chordPans(sl.length);
+      sl.forEach((v, k) => { v.panU = u[k]; v.k = k; v.n = sl.length; });
+      const ss = svoices.filter(v => v.state === 'on'); ss.forEach(v => { v.panU = strumPan(v.sk ?? 0, v.sn ?? 1); });
+    }
+    allV().forEach(v => { if (v.state !== 'free'){ v.panPos = v.panU * S.synth.width; v.pan.pan.setTargetAtTime(v.panPos, t, remap ? .12 : .03); } });
+  }
   function setBend(c, tc){ bendSrc.offset.setTargetAtTime(c, now(), tc); }
   let vibVoice = null;
   function topVibrato(x){
@@ -1104,12 +1208,13 @@ function Engine(ctx, opt = {}){
       });
     }
     const pf = perfOn() ? perfFloor() : 1;
-    if (pf > 0) trigs.forEach(([v, t]) => trigV(v, t, pf));
+    if (pf > 0 && !sm.on) trigs.forEach(([v, t]) => trigV(v, t, pf));
+    const pans = chordPans(N);
     out.forEach(({v, k, fresh, from}) => {
-      v.tgt = targets[k]; v.k = k; v.n = N;
-      const pos = panFor(k, N);
-      if (fresh) v.pan.pan.setValueAtTime(pos, T);
-      else { if (from != null) v.pan.pan.setValueAtTime(from, ref); v.pan.pan.setTargetAtTime(pos, ref, Math.max(.04, glide / 3)); }
+      v.tgt = targets[k]; v.k = k; v.n = N; v.panU = pans[k];
+      const pos = pans[k] * S.synth.width;
+      if (fresh){ v.pan.pan.cancelScheduledValues(T); v.pan.pan.setValueAtTime(pos, T); }
+      else { v.pan.pan.cancelScheduledValues(ref); if (from != null) v.pan.pan.setValueAtTime(from, ref); v.pan.pan.setTargetAtTime(pos, ref, Math.max(.04, glide / 3)); }
       v.panPos = pos;
     });
     st.lastPitches = targets.slice();
@@ -1235,7 +1340,8 @@ function Engine(ctx, opt = {}){
     chordHit(t, P.gate * d * 15 / S.bpm, r, peak);
   }
   function tickPerf(tk, t){
-    if (!perfOn() || !st.cur || Math.abs(t - PF.lastForce) < .02) return;
+    tickStrum(tk, t);
+    if (sm.on || !perfOn() || !st.cur || Math.abs(t - PF.lastForce) < .02) return;
     const P = S.perf, r = region(tk), spb = 60 / S.bpm;
     if (r.kind === 'arp'){
       if (tk % P.rate) return;
@@ -1250,13 +1356,14 @@ function Engine(ctx, opt = {}){
     patternHit(t + (barStep % 2 ? swingDelay(spb / 4) : 0), barStep, r);
   }
   function forceHit(T){
-    if (!perfOn() || !st.cur) return;
+    if (sm.on || !perfOn() || !st.cur) return;
     PF.lastForce = T;
     const b = beatAt(T), r = region(Math.round(b * PPQ));
     if (r.kind === 'arp'){ arpStep(T, S.perf.rate / PPQ * 60 / S.bpm * S.perf.gate, 1, r.floor); return; }
     patternHit(T, ((Math.floor(b * 4 + .01) % 16) + 16) % 16, r);
   }
   function updateStyle(){
+    if (sm.on) return;
     const t = now(), on = perfOn(), fl = on ? perfFloor() : 1;
     if (st.appliedOn === null){ st.appliedOn = on; st.appliedFloor = fl; return; }
     if (on !== st.appliedOn || Math.abs(fl - st.appliedFloor) > .05){
@@ -1278,6 +1385,90 @@ function Engine(ctx, opt = {}){
     return ((Math.floor(beatAt(t) * 4 + 1e-6) % 8) + 8) % 8;
   }
   function recClose(T){ if (!rec) return; rec.open.forEach(n => rec.events.push({...n, dur:T - n.t})); rec.open.clear(); }
+
+  /* strum strip: a manual arpeggiator. While it's touched the chord voices go quiet and the performer pauses;
+     the strip's cells are the current chord's voiced notes, repeated over the chosen number of octaves. */
+  const sm = {on:false, u:0, b:.5, idx:null, played:null, lastT:-1, recent:[]};
+  function strumCells(){
+    const base = st.lastPitches; if (!base.length) return [];
+    const n = S.strumOct, lo = -Math.floor((n - 1) / 2), out = new Set();
+    for (let o = lo; o < lo + n; o++) base.forEach(p => { const q = p + 12 * o; if (q >= 24 && q <= 108) out.add(q); });
+    return [...out].sort((a, b) => a - b);
+  }
+  const cellIdx = (u, n) => clamp(Math.floor(u * n), 0, n - 1);
+  function strumPan(k, n){
+    if (S.widthMode !== 'random') return unitPan(k, n);
+    // keep strummed notes spread out: best of a few random spots, farthest from the last few notes
+    let best = 0, bd = -1;
+    for (let i = 0; i < 6; i++){ const c = Math.random() * 2 - 1, d = sm.recent.length ? Math.min(...sm.recent.map(r => Math.abs(r - c))) : 1; if (d > bd){ bd = d; best = c; } }
+    sm.recent.push(best); if (sm.recent.length > 3) sm.recent.shift();
+    return best;
+  }
+  function setBright(v, t){
+    v.layers.forEach((L, li) => { if (L) L.filter.frequency.setTargetAtTime(S.strumBright ? clamp(S.synth.layers[li].cutoff * Math.pow(2, (sm.b - .5) * 4), 40, 18000) : S.synth.layers[li].cutoff, t, .015); });
+  }
+  function strumNote(k, cells, t, vel){
+    const p = cells[k];
+    let v = svoices.find(x => x.state === 'on' && x.tgt === p);
+    if (!v) v = svoices.find(x => x.state === 'free' || (x.state === 'releasing' && x.freeAt <= t)) || svoices.slice().sort((a, b) => a.startT - b.startT)[0];
+    setOct(v, 0, t);
+    v.pitch.set(t, [{t, v:p}]); v.presEnv.set(t, [{t, v:LEVEL}]);
+    v.sk = k; v.sn = cells.length; v.panU = strumPan(k, cells.length); v.panPos = v.panU * S.synth.width;
+    v.pan.pan.cancelScheduledValues(t); v.pan.pan.setValueAtTime(v.panPos, t);
+    setBright(v, t); trigV(v, t, vel);
+    v.state = 'on'; v.tgt = p; v.startT = t; v.relT = t;
+    sm.played = p; sm.lastT = t; sm.last = v;
+  }
+  function duckChord(t){
+    voices.forEach(v => { if (v.state === 'on' || v.state === 'joining') v.layers.forEach(L => { if (L){ const g = L.amp.gain; g.cancelScheduledValues(t); g.setTargetAtTime(0, t, .03); } }); });
+  }
+  function strumDown(u, b){
+    ensureSV();
+    sm.on = true; sm.u = u; sm.b = b; sm.idx = null; sm.played = null; sm.lastT = -1;
+    const t = now() + .005; duckChord(t);
+    const cells = strumCells(); if (!cells.length) return;
+    sm.idx = cellIdx(u, cells.length);
+    if (S.strumQ === 'free') strumNote(sm.idx, cells, t, .9);
+  }
+  function strumMove(u, b){
+    if (!sm.on) return;
+    sm.u = u; sm.b = b;
+    if (S.strumBright && sm.last && sm.last.state === 'on') setBright(sm.last, now());
+    const cells = strumCells(); if (!cells.length) return;
+    const k = cellIdx(u, cells.length);
+    if (k === sm.idx) return;
+    if (S.strumQ === 'free'){
+      // a fast sweep plays every cell it crosses, in order, a few ms apart
+      const from = sm.idx == null ? k : sm.idx, dir = Math.sign(k - from) || 1, t = now() + .005;
+      let j = sm.idx == null ? k : from + dir, n = 0;
+      for (; dir > 0 ? j <= k : j >= k; j += dir, n++) strumNote(j, cells, t + n * .004, .9);
+    }
+    sm.idx = k;
+  }
+  function tickStrum(tk, t){
+    if (!sm.on) return;
+    const rate = S.strumQ === 'arp' ? S.perf.rate : 6;
+    if (tk % rate) return;
+    const cells = strumCells(); if (!cells.length) return;
+    const k = cellIdx(sm.u, cells.length), p = cells[k], vel = tk % PPQ === 0 ? 1 : .82;
+    if (S.strumQ !== 'free' && p !== sm.played){ sm.idx = k; strumNote(k, cells, t, vel); return; }
+    if (S.strumRepeat && p === sm.played && t - sm.lastT > rate / PPQ * 60 / S.bpm * .9) strumNote(k, cells, t, vel);
+  }
+  function releaseStrum(t){
+    svoices.forEach(v => { if (v.state === 'on'){ relV(v, t, 0); v.state = 'releasing'; v.relT = t; v.relR = maxR(); v.freeAt = t + v.relR * 1.6 + .05; } });
+  }
+  function strumUp(){
+    if (!sm.on) return;
+    sm.on = false; const t = now() + .005;
+    releaseStrum(t);
+    // the chord comes back: pads re-attack at once; other styles pick up on their next hit
+    if (!perfOn()) voices.forEach(v => { if (v.state === 'on') trigV(v, t, 1); });
+    st.appliedOn = null;
+  }
+  function strumInfo(){
+    const cells = strumCells();
+    return {cells, on:sm.on, idx:sm.on && cells.length ? cellIdx(sm.u, cells.length) : -1, ring:new Set(svoices.filter(v => v.state === 'on').map(v => v.tgt))};
+  }
 
   /* scheduling */
   const LOOK = .09;
@@ -1316,6 +1507,7 @@ function Engine(ctx, opt = {}){
       if (land) hl = Math.max(t0, T - S.glide);
       if (perfOn()) st.pending.push({T, at:T, kind:'force'});
       else if (rec) targets.forEach(p => rec.open.set(p, {t:T, p, vel:.75}));
+      if (sm.on) duckChord(t0);
     }
     st.lastLaunchT = T; st.uiEv.push({T:hl, idx:ev.idx ?? null, chord:c, step:ev.step});
     st.uiEv.sort((a, b) => a.T - b.T);
@@ -1357,7 +1549,7 @@ function Engine(ctx, opt = {}){
   function stopAll(){
     st.pending = []; st.uiEv = [];
     loop.state = 'idle';
-    releaseAll(now() + .005); st.lastPitches = []; st.cur = null;
+    releaseAll(now() + .005); releaseStrum(now() + .005); sm.on = false; st.lastPitches = []; st.cur = null;
   }
   function setBpm(){ const t = now(); st.ba = beatAt(t); st.ta = t; }
   function preview(idx){
@@ -1370,7 +1562,8 @@ function Engine(ctx, opt = {}){
   applyGlobal();
   return {ctx, voices, st, loop, now, setNow:t => { simNow = t; }, tick, launch, scheduleRelease, startLoop, startLoopAt, stopAll, preview,
     liveShape, topVibrato, setBend, applyGlobal, applyWidth, updateLayer, rebuildLayer, repitchLayer, rebuildAll:() => { rebuildLayer(0); rebuildLayer(1); },
-    beatAt, setBpm, recClose, rhythmStep, resetGroups:() => { PF.rg = {}; PF.hitN = 0; }};
+    beatAt, setBpm, recClose, rhythmStep, resetGroups:() => { PF.rg = {}; PF.hitN = 0; },
+    allVoices:allV, strumDown, strumMove, strumUp, strumInfo};
 }
 
 /* ---------- Live engine ---------- */
@@ -1473,18 +1666,30 @@ function fader(host, o){
   const commit = v => { o.set(v); render(); save(); };
   const setPos = p => { p = clamp(p, 0, 1); if (o.detents) for (const d of o.detents) if (Math.abs(p - d) < .03) p = d; commit(fromPos(p)); };
   const posFrom = e => { const r = el.getBoundingClientRect(); return o.vertical ? 1 - (e.clientY - r.top - 6) / (r.height - 12) : (e.clientX - r.left - 6) / (r.width - 12); };
+  // Horizontal faders sit in panes that scroll vertically and swipe sideways. The browser used to claim some of those touches and
+  // cancel the drag, which snapped the value back (Harmony and Complexity looked like they only flashed). Now the fader keeps every
+  // touch: once the finger has moved a few pixels it decides, a mostly vertical move scrolls the pane by hand, anything else drags.
   let drag = null, lastDown = 0;
   const VIB = 18;
   el.addEventListener('pointerdown', e => {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     const t = performance.now();
     if (t - lastDown < 300 && o.def != null){ lastDown = 0; drag = null; commit(o.def); return; }
-    lastDown = t; drag = {id:e.pointerId, start:o.get(), moved:false, x:e.clientX, y:e.clientY, vib:!!(o.vibrato && o.vibrato())};
+    lastDown = t; drag = {id:e.pointerId, start:o.get(), moved:false, x:e.clientX, y:e.clientY, vib:!!(o.vibrato && o.vibrato()), mode:o.vertical || e.pointerType === 'mouse' ? 'drag' : null, ly:e.clientY};
     try { el.setPointerCapture(e.pointerId); } catch (err) {}
-    if (o.immediate){ e.preventDefault(); setPos(posFrom(e)); el.classList.add('drag'); }
+    if (o.immediate && drag.mode){ e.preventDefault(); setPos(posFrom(e)); el.classList.add('drag'); }
   });
+  el.addEventListener('touchstart', e => { if (!o.vertical) e.preventDefault(); }, {passive:false});
   el.addEventListener('pointermove', e => {
     if (!drag || e.pointerId !== drag.id) return;
+    if (!drag.mode){
+      const dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < 6) return;
+      drag.mode = Math.abs(dy) > Math.abs(dx) * 1.2 ? 'scroll' : 'drag';
+      drag.scroller = el.closest('.pane,.sheet');
+      if (drag.mode === 'drag' && o.immediate){ el.classList.add('drag'); if (!drag.vib) setPos(posFrom({clientX:drag.x, clientY:drag.y})); }
+    }
+    if (drag.mode === 'scroll'){ if (drag.scroller) drag.scroller.scrollTop -= e.clientY - drag.ly; drag.ly = e.clientY; return; }
     if (drag.vib){
       const d = o.vertical ? drag.y - e.clientY : e.clientX - drag.x;
       if (Math.abs(d) <= VIB){ o.onVib(d / VIB); return; }
@@ -1492,7 +1697,11 @@ function fader(host, o){
     }
     drag.moved = true; el.classList.add('drag'); setPos(posFrom(e));
   });
-  const up = e => { if (!drag) return; if (o.onVib) o.onVib(0); if (e.type === 'pointerup' && !drag.moved && !o.immediate) setPos(posFrom(e)); if (e.type === 'pointercancel' && !o.immediate) commit(drag.start); drag = null; el.classList.remove('drag'); };
+  const up = e => {
+    if (!drag) return; if (o.onVib) o.onVib(0);
+    if (e.type === 'pointerup' && !drag.moved && drag.mode !== 'scroll' && !(o.immediate && drag.mode === 'drag' && o.vertical)) setPos(posFrom(e));
+    drag = null; el.classList.remove('drag');
+  };
   el.addEventListener('pointerup', up); el.addEventListener('pointercancel', up);
   el.addEventListener('keydown', e => {
     const k = {ArrowRight:1, ArrowUp:1, ArrowLeft:-1, ArrowDown:-1}[e.key]; if (!k) return;
@@ -1573,7 +1782,7 @@ function param(el, o){
     d0.moved = true; el.classList.add('drag');
     if (opts) setI(d0.i + Math.round(d / 24)); else { o.set(d0.v + Math.round(d / 3)); render(); save(); }
   });
-  const end = () => { if (d0 && !d0.moved && opts) setI((Math.max(0, idx()) + 1) % opts.length); d0 = null; el.classList.remove('drag'); };
+  const end = () => { if (d0 && !d0.moved){ if (o.onTap) o.onTap(); else if (opts) setI((Math.max(0, idx()) + 1) % opts.length); } d0 = null; el.classList.remove('drag'); };
   el.addEventListener('pointerup', end);
   el.addEventListener('pointercancel', () => { d0 = null; el.classList.remove('drag'); });
   let wacc = 0;
@@ -1581,6 +1790,22 @@ function param(el, o){
   el.addEventListener('keydown', e => { const k = {ArrowUp:1, ArrowRight:1, ArrowDown:-1, ArrowLeft:-1}[e.key]; if (k){ e.preventDefault(); step(k); } });
   render(); return render;
 }
+// A list that opens from a control, grouped under headings; tap a row to choose it, tap outside to close
+let openMenu = null;
+function closeMenu(){ if (openMenu){ openMenu.remove(); openMenu = null; } }
+function showMenu(anchor, groups, current, onPick){
+  closeMenu();
+  const m = document.createElement('div'); m.className = 'menu'; m.setAttribute('role', 'listbox');
+  m.innerHTML = groups.map(([title, items]) => `<h4>${title}</h4>` + items.map(([v, l]) => `<button type="button" role="option" data-v="${v}" aria-current="${String(v) === String(current)}">${l}</button>`).join('')).join('');
+  document.body.appendChild(m); openMenu = m;
+  const r = anchor.getBoundingClientRect(), vh = window.innerHeight, w = Math.max(r.width, 220);
+  const below = vh - r.bottom - 12, above = r.top - 12, h = Math.min(420, Math.max(below, above));
+  Object.assign(m.style, {width:w + 'px', maxHeight:h + 'px', left:clamp(r.left, 8, window.innerWidth - w - 8) + 'px'});
+  if (below >= Math.min(260, above)) m.style.top = (r.bottom + 6) + 'px'; else m.style.bottom = (vh - r.top + 6) + 'px';
+  m.querySelector('[aria-current="true"]')?.scrollIntoView({block:'center'});
+  m.addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; closeMenu(); onPick(b.dataset.v); });
+}
+document.addEventListener('pointerdown', e => { if (openMenu && !openMenu.contains(e.target)) closeMenu(); }, true);
 function stackBtn(btn, labels){
   btn.innerHTML = `<span class="stack">${labels.map((l, i) => `<span data-i="${i}">${l}</span>`).join('')}</span>`;
   const spans = [...btn.querySelectorAll('.stack>span')];
@@ -1593,14 +1818,18 @@ function dieSlider(host, o){
   host.appendChild(el);
   const die = el.querySelector('.die'), amt = el.querySelector('.damt');
   const D = {held:false, dragging:false, armed:false, used:false};
-  let drag = null, rot = 0;
+  let drag = null, rot = 0, rolledT;
   const maxX = () => Math.max(10, el.clientWidth - die.offsetWidth - 10);
-  const setX = x => el.style.setProperty('--x', x + 'px');
+  // the die rolls along the track as you drag (one turn per circumference), then tumbles home when you let go
+  const ROLL = 360 / (Math.PI * 36);
+  const setX = x => { el.style.setProperty('--x', x + 'px'); };
+  const setRot = r => el.style.setProperty('--rot', r + 'deg');
   const notify = () => { el.classList.toggle('armed', D.armed); o.onMode && o.onMode(); };
-  function spin(a){
-    rot += 360 + Math.round(a * 4) * 90; el.style.setProperty('--rot', rot + 'deg');
+  function spin(a, x){
+    rot = Math.round((rot + (x || 0) * ROLL + 360) / 90) * 90 + Math.round(a * 4) * 90; setRot(rot);
     amt.textContent = Math.round(a * 100) + '%'; setX(0);
-    setTimeout(() => { amt.textContent = ''; }, 700);
+    el.classList.add('rolled'); clearTimeout(rolledT);
+    rolledT = setTimeout(() => { amt.textContent = ''; el.classList.remove('rolled'); }, 700);
     o.onRoll(a);
   }
   die.addEventListener('pointerdown', e => {
@@ -1611,21 +1840,31 @@ function dieSlider(host, o){
     if (!drag || e.pointerId !== drag.id) return;
     const dx = e.clientX - drag.x0;
     if (!drag.moved){ if (dx < 8) return; drag.moved = true; D.held = false; D.dragging = true; el.classList.add('dragging'); notify(); }
-    const x = clamp(dx, 0, maxX()); setX(x); amt.textContent = Math.round(x / maxX() * 100) + '%';
+    const x = clamp(dx, 0, maxX()); setX(x); setRot(rot + x * ROLL); amt.textContent = Math.round(x / maxX() * 100) + '%';
   });
   const up = e => {
     if (!drag) return; const d = drag; drag = null; D.held = false; D.dragging = false;
-    if (d.moved){ el.classList.remove('dragging'); const a = clamp((e.clientX - d.x0) / maxX(), 0, 1); notify(); if (a > .02 && e.type === 'pointerup') spin(a); else { setX(0); amt.textContent = ''; } return; }
+    if (d.moved){
+      el.classList.remove('dragging'); const x = clamp(e.clientX - d.x0, 0, maxX()), a = x / maxX(); notify();
+      if (a > .02 && e.type === 'pointerup') spin(a, x); else { setX(0); setRot(rot); amt.textContent = ''; }
+      return;
+    }
     if (o.target && !D.used && e.type === 'pointerup') D.armed = !D.armed;
     notify();
   };
   die.addEventListener('pointerup', up); die.addEventListener('pointercancel', up);
   die.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); spin(1); } });
-  el.addEventListener('pointerdown', e => {
-    if (e.target.closest('.die')) return;
-    const r = el.getBoundingClientRect(), a = clamp((e.clientX - r.left - die.offsetWidth / 2 - 4) / maxX(), 0, 1);
-    setX(a * maxX()); amt.textContent = Math.round(a * 100) + '%'; D.dragging = true; notify();
-    setTimeout(() => { D.dragging = false; notify(); spin(a); }, 220);
+  // tapping the track rolls by that amount, but only a clean tap: a touch that moves (someone scrolling) or lingers does nothing
+  let tap = null;
+  el.addEventListener('pointerdown', e => { if (e.target.closest('.die')) return; tap = {id:e.pointerId, x:e.clientX, y:e.clientY, t:performance.now()}; });
+  el.addEventListener('pointermove', e => { if (tap && e.pointerId === tap.id && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 8) tap = null; });
+  el.addEventListener('pointercancel', () => { tap = null; });
+  el.addEventListener('pointerup', e => {
+    const t0 = tap; tap = null;
+    if (!t0 || e.pointerId !== t0.id || e.target.closest('.die') || performance.now() - t0.t > 450) return;
+    const r = el.getBoundingClientRect(), a = clamp((e.clientX - r.left - die.offsetWidth / 2 - 4) / maxX(), 0, 1), x = a * maxX();
+    setX(x); setRot(rot + x * ROLL); amt.textContent = Math.round(a * 100) + '%'; D.dragging = true; notify();
+    setTimeout(() => { D.dragging = false; notify(); spin(a, x); }, 220);
   });
   D.active = () => D.held || D.armed;
   D.busy = () => D.held || D.armed || D.dragging;
@@ -1719,7 +1958,7 @@ pencil.addEventListener('pointerdown', e => { e.preventDefault(); try { pencil.s
 const pencilUp = e => { if (!pencilHeld) return; pencilHeld = false; if (!pencilUsed && e.type === 'pointerup') editMode = !editMode; gridModes(); };
 pencil.addEventListener('pointerup', pencilUp); pencil.addEventListener('pointercancel', pencilUp);
 pencil.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); editMode = !editMode; gridModes(); } });
-const padDie = dieSlider($('#padBar'), {id:'genDie', label:'Generate', target:'pad', onMode:() => gridModes(), onRoll:a => rollPadsUI(() => rollPads(a))});
+const padDie = dieSlider($('#padDieHost'), {id:'genDie', label:'Generate', target:'pad', onMode:() => gridModes(), onRoll:a => rollPadsUI(() => rollPads(a))});
 
 const sheetOpen = () => !$('#sheetBg').hidden || !$('#setBg').hidden;
 const KEYMAP = {'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,q:0,w:1,e:2,a:3,s:4,d:5,z:6,x:7,c:8};
@@ -1854,35 +2093,78 @@ const fmtT = v => v < .005 ? 'Off' : v < 1 ? Math.round(v * 1000) + 'ms' : v.toF
 const pct = v => Math.round(v * 100) + '%';
 const sgn = n => n === 0 ? '0' : (n > 0 ? '+' : '−') + Math.abs(n);
 function buildStyleFader(){
-  const host = $('#vsStyle'); host.innerHTML = '';
+  const host = $('#hStyle'); host.innerHTML = '';
   const en = enStyles(), n = en.length;
   S.perf.style = clamp(S.perf.style, 0, n - 1);
   const fmt = v => { if (n === 1) return STYLE_NAMES[en[0]]; const lo = Math.floor(v + 1e-6), f = v - lo; if (f < .06 || lo >= n - 1) return STYLE_NAMES[en[Math.min(n - 1, lo)]]; if (f > .94) return STYLE_NAMES[en[lo + 1]]; return `${STYLE_NAMES[en[lo]]} › ${STYLE_NAMES[en[lo + 1]]}`; };
-  return fader(host, {id:'fStyle', label:'Style', vertical:true, immediate:true, def:0, min:0, max:Math.max(1e-9, n - 1),
+  return fader(host, {id:'fStyle', label:'Style', immediate:true, def:0, min:0, max:Math.max(1e-9, n - 1),
     detents:n > 1 ? en.map((_, i) => i / (n - 1)) : [0], ticks:n > 2 ? en.slice(1, -1).map((_, i) => (i + 1) / (n - 1)) : null,
     get:() => S.perf.style, set:v => { S.perf.style = n > 1 ? v : 0; }, fmt});
 }
 let styleRender = buildStyleFader();
 refreshers.push(() => styleRender());
-refreshers.push(fader($('#vsInv'), {id:'fInv', label:'Inversion', vertical:true, bipolar:true, immediate:true, def:0, kstep:1 / 12,
-  get:() => S.inversion, set:v => { const ch = v !== S.inversion; S.inversion = v; if (ch && S.liveInv && E) E.liveShape('inv'); }, fromPos:x => Math.round(x * 12 - 6), toPos:v => (v + 6) / 12, fmt:sgn}));
-refreshers.push(fader($('#vsVoice'), {id:'fVoicing', label:'Voicing', vertical:true, immediate:true, def:.4, get:() => S.voicing, set:v => { S.voicing = v; if (S.liveVoice && E) E.liveShape('voice'); }, fmt:v => v < .1 ? 'Closed' : v > .9 ? 'Open' : pct(v)}));
-refreshers.push(fader($('#vsTop'), {id:'fTop', label:'Top voice', vertical:true, bipolar:true, immediate:true, def:0, detents:[.5], min:-1, max:1,
+refreshers.push(fader($('#hTop'), {id:'fTop', label:'Top voice', bipolar:true, immediate:true, def:0, detents:[.5], min:-1, max:1,
   get:() => S.topVoice, set:v => { S.topVoice = v; if (E) E.liveShape('top'); }, vibrato:() => S.topVib, onVib:x => E && E.topVibrato(x),
   fmt:v => { const st = Math.round(v * 12); return st === 0 ? 'Centre' : sgn(st); }}));
+refreshers.push(knob($('#shapeKnobs'), {id:'kInv', label:'Inversion', min:-6, max:6, step:1, bipolar:true, def:0,
+  get:() => S.inversion, set:v => { const ch = v !== S.inversion; S.inversion = v; if (ch && S.liveInv && E) E.liveShape('inv'); }, fmt:sgn}));
+refreshers.push(knob($('#shapeKnobs'), {id:'kVoicing', label:'Voicing', def:.4, get:() => S.voicing, set:v => { S.voicing = v; if (S.liveVoice && E) E.liveShape('voice'); }, fmt:v => v < .1 ? 'Closed' : v > .9 ? 'Open' : pct(v)}));
 const sqHtml = v => `<span class="sq">${PATS[v].map(b => `<i${b ? ' class="on"' : ''}></i>`).join('')}</span>`;
 refreshers.push(fader($('#perfH'), {id:'rhythm', label:'Rhythm', def:1, kstep:1 / 127, get:() => S.perf.density, set:v => S.perf.density = v,
   fromPos:x => Math.round(x * (PATS.length - 1)), toPos:v => v / (PATS.length - 1), fmt:v => PATS[v].join(''), html:sqHtml}));
-const pK = o => refreshers.push(knob($('#perfKnobs'), {...o, def:DEF_PERF[o.k], get:() => S.perf[o.k], set:v => S.perf[o.k] = v}));
-pK({id:'kGate', k:'gate', label:'Gate', min:.05, max:1, fmt:pct});
-pK({id:'kAccent', k:'accent', label:'Accent', fmt:pct});
-pK({id:'kSwing', k:'swing', label:'Swing', fmt:v => Math.round(50 + 25 * v) + '%'});
-const pP = (id, label, k, options, num, after) => refreshers.push(param($(id), {label, options, get:() => S.perf[k], set:v => { S.perf[k] = num ? +v : v; if (after) after(); }}));
-pP('#pNotes', 'Notes', 'notes', NOTES);
-pP('#pBroken', 'Broken', 'broken', BROKEN, false, () => E && E.resetGroups());
-pP('#pRate', 'Arp rate', 'rate', RATES, true);
-pP('#pOct', 'Arp octaves', 'oct', [[1,'1'],[2,'2'],[3,'3']], true);
-pP('#pArp', 'Arp mode', 'arp', ARP_MODES);
+const pK = (host, o) => refreshers.push(knob($(host), {...o, def:DEF_PERF[o.k], get:() => S.perf[o.k], set:v => { S.perf[o.k] = o.num ? +v : v; if (o.then) o.then(); }}));
+pK('#perfKnobs', {id:'kGate', k:'gate', label:'Gate', min:.05, max:1, fmt:pct});
+pK('#perfKnobs', {id:'kAccent', k:'accent', label:'Accent', fmt:pct});
+pK('#perfKnobs', {id:'kSwing', k:'swing', label:'Swing', fmt:v => Math.round(50 + 25 * v) + '%'});
+pK('#perfKnobs', {id:'kNotes', k:'notes', label:'Notes', options:NOTES});
+pK('#perfKnobs', {id:'kBroken', k:'broken', label:'Broken', options:BROKEN, then:() => E && E.resetGroups()});
+pK('#arpKnobs', {id:'kArp', k:'arp', label:'Mode', options:ARP_MODES});
+pK('#arpKnobs', {id:'kRate', k:'rate', label:'Rate', options:RATES, num:true});
+pK('#arpKnobs', {id:'kOct', k:'oct', label:'Octaves', options:[[1,'1'],[2,'2'],[3,'3']], num:true});
+
+/* ---------- Strum strip ---------- */
+// Slide across it to play the current chord's notes, low to high. Touching it takes over from the pad sound and the performer.
+const strumEl = $('#strum'), strumCellsEl = $('#strumCells'), perfLay = $('#perfLay');
+let strumId = null, strumSig = '', strumMarks = '';
+function layoutStrum(){
+  perfLay.classList.toggle('v', S.strumDir === 'v'); perfLay.classList.toggle('h', S.strumDir === 'h');
+  strumEl.classList.toggle('bright', S.strumBright); strumSig = '';
+}
+function strumPos(e){
+  const r = strumEl.getBoundingClientRect(), x = clamp((e.clientX - r.left) / r.width, 0, .9999), y = clamp((e.clientY - r.top) / r.height, 0, .9999);
+  return S.strumDir === 'v' ? {u:1 - y, b:x} : {u:x, b:1 - y};
+}
+strumEl.addEventListener('contextmenu', e => e.preventDefault());
+strumEl.addEventListener('touchstart', e => e.preventDefault(), {passive:false});
+strumEl.addEventListener('pointerdown', e => {
+  if (strumId != null || (e.pointerType === 'mouse' && e.button !== 0)) return;
+  e.preventDefault(); ensureAudio(); if (!E) return;
+  try { strumEl.setPointerCapture(e.pointerId); } catch (err) {}
+  strumId = e.pointerId; const p = strumPos(e); E.strumDown(p.u, p.b);
+});
+strumEl.addEventListener('pointermove', e => { if (e.pointerId !== strumId || !E) return; const p = strumPos(e); E.strumMove(p.u, p.b); });
+const strumEnd = e => { if (e.pointerId !== strumId) return; strumId = null; if (E) E.strumUp(); };
+strumEl.addEventListener('pointerup', strumEnd); strumEl.addEventListener('pointercancel', strumEnd);
+function renderStrum(){
+  const info = E ? E.strumInfo() : {cells:[], idx:-1, ring:new Set()}, cells = info.cells;
+  const root = E && E.st.cur ? E.st.cur.c.r : -1, horiz = S.strumDir === 'h';
+  const sig = cells.join(',') + '|' + root + '|' + S.strumDir + '|' + useSharps();
+  if (sig !== strumSig){
+    strumSig = sig; strumMarks = '';
+    $('#strumHint').hidden = cells.length > 0; strumEl.classList.toggle('has-cells', cells.length > 0);
+    const size = (horiz ? strumEl.clientWidth : strumEl.clientHeight) / Math.max(1, cells.length);
+    strumCellsEl.innerHTML = cells.map((p, i) => {
+      const pc = ((p % 12) + 12) % 12, isRoot = pc === root, oct = i > 0 && p - cells[0] >= 12 && Math.floor((p - cells[0]) / 12) !== Math.floor((cells[i - 1] - cells[0]) / 12);
+      const label = size >= (horiz ? 26 : 15) || isRoot ? (horiz && size >= 26 ? noteName(p) : rootName(pc)) : '';
+      return `<div class="scell${isRoot ? ' root' : ''}${oct ? ' oct' : ''}">${label}</div>`;
+    }).join('');
+  }
+  const marks = info.idx + '|' + [...info.ring].join(',');
+  if (marks !== strumMarks){
+    strumMarks = marks;
+    [...strumCellsEl.children].forEach((el, i) => { el.classList.toggle('on', i === info.idx); el.classList.toggle('ring', i !== info.idx && info.ring.has(cells[i])); });
+  }
+}
 
 /* ---------- Chords pane ---------- */
 refreshers.push(fader($('#genFaders'), {id:'chroma', label:'Harmony', def:.3, get:() => S.chroma, set:v => S.chroma = v, fmt:v => v < .08 ? 'Diatonic' : v > .92 ? 'Chromatic' : pct(v)}));
@@ -1903,13 +2185,16 @@ const ENG_CTRL = {
   fm:{enums:[['ratio','Ratio',RATIOS,'repitch'],['wave','Carrier',WAVES.slice(0, 2)]], knobs:[['index','Index',{max:10},v => v.toFixed(1)],['ienv','Index env',{},pct]]},
   strings:{enums:[], knobs:[['spread','Spread',{max:40},v => Math.round(v) + '¢'],['octave','Octave',{},pct],['motion','Motion',{},pct]]}
 };
+const setPreset = v => {
+  const eng = Object.keys(PRESETS).find(k => PRESETS[k].some(p => p[0] === v)) || 'analog', P = S.synth.layers[curLayer];
+  S.synth.layers[curLayer] = makeLayer(eng, v, {level:P.level || .8});
+  if (E) E.rebuildLayer(curLayer); setTimeout(renderLayerPanel);
+};
+// tap the preset to open the full list grouped by engine; dragging still steps through them
 const presetRender = param($('#pPreset'), {label:'Preset', options:Object.values(PRESETS).flat().map(p => [p[0], p[0]]),
-  get:() => S.synth.layers[curLayer].preset,
-  set:v => {
-    const eng = Object.keys(PRESETS).find(k => PRESETS[k].some(p => p[0] === v)) || 'analog', P = S.synth.layers[curLayer];
-    S.synth.layers[curLayer] = makeLayer(eng, v, {level:P.level || .8});
-    if (E) E.rebuildLayer(curLayer); setTimeout(renderLayerPanel);
-  }});
+  get:() => S.synth.layers[curLayer].preset, set:setPreset,
+  onTap:() => showMenu($('#pPreset'), ENGINES.map(([k, n]) => [n, PRESETS[k].map(p => [p[0], p[0]])]), S.synth.layers[curLayer].preset,
+    v => { act(() => setPreset(v)); presetRender(); })});
 function renderLayerPanel(){
   const host = $('#layerPanel'); host.innerHTML = '';
   $('#layerTabs').querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(+b.dataset.v === curLayer)));
@@ -1998,23 +2283,32 @@ $('#resetSynth').addEventListener('click', () => { act(() => { S.synth = DEF_SYN
 
 /* ---------- Panes & palettes ---------- */
 const panes = $('#panes'), tabBtns = [...document.querySelectorAll('#tabs button')];
-function applyPalette(){ document.documentElement.dataset.pal = S.pane === 3 ? S.palSound : S.palPlay; }
+// The palette follows the swipe position, so neighbouring panes blend instead of meeting at a hard edge
+const hexRGB = h => [1, 3, 5].map(i => parseInt(h.slice(i, i + 2), 16));
+const mixHex = (a, b, t) => '#' + hexRGB(a).map((x, i) => Math.round(x + (hexRGB(b)[i] - x) * t).toString(16).padStart(2, '0')).join('');
+const TOKENS = Object.keys(PAL.ember).filter(k => k !== 'hue');
+let curPal = {...PAL.ember}, palF = -1;
+function applyPalette(f){
+  f = clamp(f ?? S.pane, 0, 3); if (Math.abs(f - palF) < .002) return; palF = f;
+  const i = Math.floor(f), t = f - i, A = PAL[PANE_PAL[i]], B = PAL[PANE_PAL[Math.min(3, i + 1)]], root = document.documentElement.style;
+  TOKENS.forEach(k => { curPal[k] = t < .001 ? A[k] : mixHex(A[k], B[k], t); root.setProperty('--' + k, curPal[k]); });
+  curPal.hue = A.hue + ((((B.hue - A.hue) % 360) + 540) % 360 - 180) * t;
+}
 function markPane(i){
   if (i === S.pane && tabBtns[i].getAttribute('aria-selected') === 'true') return;
-  S.pane = i; tabBtns.forEach((b, j) => b.setAttribute('aria-selected', String(j === i))); applyPalette(); persist();
+  S.pane = i; tabBtns.forEach((b, j) => b.setAttribute('aria-selected', String(j === i))); persist();
 }
-function showPane(i, instant){ panes.scrollTo({left:i * panes.clientWidth, behavior:instant || REDUCED ? 'auto' : 'smooth'}); markPane(i); }
+function showPane(i, instant){ panes.scrollTo({left:i * panes.clientWidth, behavior:instant || REDUCED ? 'auto' : 'smooth'}); markPane(i); if (instant || REDUCED) applyPalette(i); }
 tabBtns.forEach((b, i) => b.addEventListener('click', () => showPane(i)));
-panes.addEventListener('scroll', () => { const i = Math.round(panes.scrollLeft / Math.max(1, panes.clientWidth)); if (i !== S.pane) markPane(clamp(i, 0, 3)); }, {passive:true});
+panes.addEventListener('scroll', () => {
+  const f = panes.scrollLeft / Math.max(1, panes.clientWidth), i = Math.round(f);
+  applyPalette(f); if (i !== S.pane) markPane(clamp(i, 0, 3));
+}, {passive:true});
 new ResizeObserver(() => { panes.scrollLeft = S.pane * panes.clientWidth; }).observe(panes);
 function refreshAll(){ refreshers.forEach(f => f()); renderPads(); renderProg(); renderLayerPanel(); syncLatch(); }
 
 /* ---------- Settings ---------- */
 const setBg = $('#setBg');
-document.querySelectorAll('.swatches').forEach(w => {
-  w.innerHTML = Object.entries(PAL).map(([k, p]) => `<button type="button" class="swatch" data-v="${k}" aria-label="${k[0].toUpperCase() + k.slice(1)}" style="background:linear-gradient(135deg,${p.bg} 0 55%,${p.glow} 55%)"></button>`).join('');
-  w.addEventListener('click', e => { const b = e.target.closest('.swatch'); if (!b) return; S[w.dataset.key] = b.dataset.v; applyPalette(); renderSettings(); persist(); });
-});
 $('#styleChecks').innerHTML = STYLE_KEYS.map(k => `<label class="check"><input type="checkbox" data-style="${k}"> ${STYLE_NAMES[k]}</label>`).join('');
 $('#styleChecks').addEventListener('change', e => {
   const k = e.target.dataset.style; if (!k) return;
@@ -2025,23 +2319,23 @@ $('#styleChecks').addEventListener('change', e => {
   styleRender = buildStyleFader(); persist();
 });
 [['top','Top voice'],['inv','Inversion'],['voice','Voicing']].forEach(([k, label]) =>
-  fader($('#glideFaders'), {id:'glide-' + k, label, def:.2, get:() => S.glides[k], set:v => S.glides[k] = v, fmt:fmtTime, fromPos:x => 1.5 * x * x, toPos:v => Math.sqrt(v / 1.5)}));
+  knob($('#glideKnobs'), {id:'glide-' + k, label, def:.2, get:() => S.glides[k], set:v => S.glides[k] = v, fmt:fmtT, fromPos:x => 1.5 * x * x, toPos:v => Math.sqrt(v / 1.5)}));
 function renderSettings(){
   setBg.querySelectorAll('.seg').forEach(seg => {
-    const c = S[seg.dataset.key], on = typeof c === 'boolean' ? (c ? '1' : '0') : c;
+    const c = S[seg.dataset.key], on = typeof c === 'boolean' ? (c ? '1' : '0') : String(c);
     seg.querySelectorAll('button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === on)));
   });
-  setBg.querySelectorAll('.swatches').forEach(w => w.querySelectorAll('.swatch').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.v === S[w.dataset.key]))));
   $('#styleChecks').querySelectorAll('input').forEach(i => i.checked = !!S.styles[i.dataset.style]);
-  $('#scopeBox').hidden = !S.showScope;
   document.body.classList.toggle('no-degree', !S.showDegree);
+  layoutStrum();
 }
 setBg.addEventListener('click', e => {
   if (e.target === setBg) return (setBg.hidden = true);
   const b = e.target.closest('.seg button'); if (!b) return;
   const key = b.closest('.seg').dataset.key;
-  S[key] = typeof S[key] === 'boolean' ? b.dataset.v === '1' : b.dataset.v;
+  S[key] = typeof S[key] === 'boolean' ? b.dataset.v === '1' : typeof S[key] === 'number' ? +b.dataset.v : b.dataset.v;
   if (key === 'slide' && E) E.setBend(0, .03);
+  if (key === 'widthMode' && E) E.applyWidth(true);
   renderSettings(); persist();
 });
 $('#setDone').innerHTML = ICON.x; $('#shDone').innerHTML = ICON.x;
@@ -2096,15 +2390,25 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeEditor
 
 /* ---------- Scope & frame loop ---------- */
 const cv = $('#scope'), g2 = cv.getContext('2d'); const WIN = 3.5;
-let dpr = 1, lo = 46, hi = 82, hue = PAL[S.palPlay].hue;
+let dpr = 1, lo = 46, hi = 82, hue = PAL.ember.hue;
+// the visualizer collapses to a slim bar with a chevron; tap the bar to bring it back. Remembered between sessions.
+const scopeBox = $('#scopeBox'), scopeTog = $('#scopeTog'); scopeTog.innerHTML = ICON.chev;
+function renderScope(){
+  scopeBox.classList.toggle('collapsed', !S.scopeOpen);
+  scopeTog.setAttribute('aria-expanded', String(S.scopeOpen));
+  scopeTog.setAttribute('aria-label', S.scopeOpen ? 'Hide visualizer' : 'Show visualizer');
+}
+scopeTog.addEventListener('click', () => { S.scopeOpen = !S.scopeOpen; renderScope(); persist(); });
+renderScope();
 function fit(){ dpr = Math.min(2, window.devicePixelRatio || 1); cv.width = cv.clientWidth * dpr; cv.height = cv.clientHeight * dpr; }
 new ResizeObserver(fit).observe(cv); fit();
 const beatDots = [...document.querySelectorAll('#beats i')];
 let activeIdx = -1, activeChord = null, lastActive = null, lastStep = null, lastRStep = -2;
 function frame(){
   requestAnimationFrame(frame);
+  renderStrum();
   if (!E) return;
-  const now = E.ctx.currentTime, pal = PAL[document.documentElement.dataset.pal] || PAL.ember, st = E.st;
+  const now = E.ctx.currentTime, pal = curPal, st = E.st;
   while (st.uiEv.length && st.uiEv[0].T <= now){
     const e = st.uiEv.shift();
     if (e.step !== undefined) activeStep = e.step;
@@ -2117,11 +2421,12 @@ function frame(){
   if (lastActive !== activeIdx || lastStep !== activeStep){ lastActive = activeIdx; lastStep = activeStep; if (loop.state === 'play') renderProg(); }
   const rs = E.rhythmStep(now);
   if (rs !== lastRStep){ lastRStep = rs; document.querySelectorAll('#rhythm .sq i').forEach((el, i) => el.classList.toggle('cur', i === rs)); }
-  if (!S.showScope) return;
+  if (!S.scopeOpen) return;
   $('#scopeChord').textContent = activeChord ? chordName(activeChord) : '';
   hue += (((pal.hue - hue + 540) % 360) - 180) * .08;
   let mn = 1e9, mx = -1e9;
-  E.voices.forEach(v => {
+  const VV = E.allVoices();
+  VV.forEach(v => {
     let a = 0; v.layers.forEach(L => { if (L) a = Math.max(a, L.amp.gain.value * L.out.gain.value); });
     const g = v.presEnv.valueAt(now) * a, p = v.pitch.valueAt(now) + v.octSrc.offset.value / 100, tr = v.trail;
     if (g > .0008) tr.push({t:now, p, g}); else if (tr.length && tr[tr.length - 1]) tr.push(null);
@@ -2140,7 +2445,7 @@ function frame(){
     g2.fillStyle = pal.faint; g2.fillText('C' + (m / 12 - 1), 8 * dpr, y - 7 * dpr);
   }
   g2.lineCap = 'round'; g2.lineWidth = 2 * dpr;
-  E.voices.forEach(v => {
+  VV.forEach(v => {
     const tr = v.trail, h = hue - 14 + (v.i % 5) * 7;
     for (let i = 1; i < tr.length; i++){
       const a = tr[i - 1], b = tr[i]; if (!a || !b) continue;
@@ -2155,7 +2460,7 @@ function frame(){
 requestAnimationFrame(frame);
 
 fillKeys(); syncLatch(); renderSettings(); renderPads(); renderProg(); renderLayerPanel(); gridModes();
-tabBtns.forEach((b, j) => b.setAttribute('aria-selected', String(j === S.pane))); applyPalette();
+tabBtns.forEach((b, j) => b.setAttribute('aria-selected', String(j === S.pane))); applyPalette(S.pane);
 requestAnimationFrame(() => { panes.scrollLeft = S.pane * panes.clientWidth; });
 lastSnap = snapState(); renderUndo();
 })();
