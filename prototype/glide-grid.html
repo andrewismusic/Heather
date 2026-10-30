@@ -37,12 +37,21 @@ body{background:var(--bg);color:var(--fg);font-family:var(--display);-webkit-fon
   .scope{height:96px!important}
 }
 header{display:flex;align-items:center;gap:8px;justify-content:space-between}
-.brand{display:flex;align-items:center;gap:10px;min-width:0}
-.brand h1{margin:0;font-size:24px;font-weight:700;letter-spacing:-0.025em;font-variation-settings:'opsz' 96}
+.brand{display:grid;gap:5px;justify-items:start;min-width:0;flex:none}
+.dhost{flex:1;min-width:0;display:flex}
+header .dslider{height:38px;border-radius:11px}
+header .die{left:3px;top:3px;width:30px;height:30px;border-radius:8px}
+header .die svg{width:24px;height:24px}
+header .dslider .dfill{width:calc(var(--x) + 36px);border-radius:10px}
+header .dslider .damt{left:42px;font-size:10px}
+header .dslider .dlab{right:9px;font-size:8.5px;letter-spacing:.06em}
+.brand h1{margin:0;font-size:20px;line-height:1;font-weight:700;letter-spacing:-0.025em;font-variation-settings:'opsz' 96}
 .beats{display:flex;gap:4px}
-.beats i{width:5px;height:5px;border-radius:50%;background:var(--line);transition:background .06s}
+.beats i{width:4px;height:4px;border-radius:50%;background:var(--line);transition:background .06s}
 .beats i.on{background:var(--glow)}
-.hdr-right{display:flex;gap:6px;align-items:center}
+.hdr-right{display:flex;gap:5px;align-items:center;flex:none}
+header .ibtn{width:34px;height:38px}
+header .hold{padding:0 8px;font-size:10px}
 .hold{appearance:none;height:38px;padding:0 11px;background:var(--surface);border:1px solid var(--line);border-radius:11px;color:var(--muted);font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;cursor:pointer}
 .hold[aria-pressed="true"]{color:var(--glow);border-color:var(--glow);background:color-mix(in oklab,var(--glow) 12%,var(--surface))}
 .ibtn{appearance:none;width:38px;height:38px;flex:none;display:grid;place-items:center;background:var(--surface);border:1px solid var(--line);border-radius:11px;color:var(--muted);cursor:pointer;padding:0;touch-action:none}
@@ -103,11 +112,10 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 @keyframes kflash{0%{background:color-mix(in oklab,var(--glow) 30%,transparent)}100%{background:transparent}}
 
 .toolbar{display:flex;gap:8px;align-items:center;min-width:0}
-.dslider{position:relative;flex:1;min-width:0;height:46px;border-radius:12px;background:var(--pad);border:1px solid var(--line);touch-action:pan-y;user-select:none;-webkit-user-select:none;cursor:pointer;--x:0px;--rot:0deg}
+.dslider{position:relative;flex:1;min-width:0;height:46px;border-radius:12px;background:var(--pad);border:1px solid var(--line);touch-action:none;user-select:none;-webkit-user-select:none;cursor:pointer;--x:0px;--rot:0deg}
 .dslider .dfill{position:absolute;left:0;top:0;bottom:0;width:calc(var(--x) + 44px);border-radius:11px;background:color-mix(in oklab,var(--glow) 16%,transparent);transition:width .45s cubic-bezier(.3,1.2,.5,1);pointer-events:none}
 .dslider .dlab{position:absolute;right:12px;top:50%;transform:translateY(-50%);font:500 10px/1 var(--mono);letter-spacing:.1em;text-transform:uppercase;color:var(--muted);pointer-events:none;transition:opacity .15s}
 .dslider.dragging .dlab,.dslider.rolled .dlab{opacity:0}
-#padBar .dslider{max-width:230px;margin-inline:auto}
 .dslider .damt{position:absolute;left:56px;top:50%;transform:translateY(-50%);font:500 11px/1 var(--mono);color:var(--fg);pointer-events:none}
 .die{position:absolute;left:4px;top:4px;width:36px;height:36px;border-radius:10px;background:var(--glow);color:var(--glow-ink);display:grid;place-items:center;cursor:grab;touch-action:none;transform:translateX(var(--x)) rotate(var(--rot));transition:transform .55s cubic-bezier(.3,1.2,.5,1)}
 .die svg{width:30px;height:30px}
@@ -116,7 +124,7 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 
 /* panes */
 .tabs{flex:none;display:grid;grid-template-columns:repeat(5,minmax(0,1fr));background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px;gap:2px}
-.tabs button{appearance:none;border:0;background:transparent;color:var(--muted);font:500 8.5px/1 var(--mono);letter-spacing:.01em;text-transform:uppercase;padding:10px 2px;border-radius:9px;cursor:pointer;white-space:nowrap}
+.tabs button{appearance:none;border:0;background:transparent;color:var(--muted);font:500 8px/1 var(--mono);letter-spacing:0;text-transform:uppercase;padding:10px 2px;border-radius:9px;cursor:pointer;white-space:nowrap}
 .tabs button[aria-selected="true"]{background:var(--pad-2);color:var(--glow)}
 .panes{flex:1;min-height:0;display:flex;overflow-x:auto;overflow-y:hidden;scroll-snap-type:x mandatory;scrollbar-width:none;overscroll-behavior-x:contain}
 .panes::-webkit-scrollbar{display:none}
@@ -164,6 +172,15 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 .fader.v .flab{bottom:11px}
 .fader.v .fval{top:11px}
 .fader.drag{border-color:var(--glow)}
+/* half-width faders share a row: label and value along the top, the thumb in the lower band so it never covers them */
+.halves{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.fader.h.half{height:46px}
+.fader.h.half .flab{top:8px;left:10px;transform:none;font-size:8.5px}
+.fader.h.half .fval{top:7px;right:10px;transform:none;font-size:10px}
+.fader.h.half .fthumb{top:24px}
+.fader.h.half .fticks i,.fader.h.half.bi::before{top:27px}
+.fader.h.half .sq i{width:7px;height:7px}
+.fader.h.half .sq{gap:2px}
 /* strum strip: always horizontal, low notes left; the vertical axis can shape brightness and release */
 .strum{position:relative;height:150px;border:1px solid var(--line);border-radius:12px;background:var(--pad);touch-action:none;overflow:hidden;user-select:none;-webkit-user-select:none;cursor:pointer;min-width:0}
 .strum-cells{position:absolute;inset:0;display:flex}
@@ -192,7 +209,7 @@ header{display:flex;align-items:center;gap:8px;justify-content:space-between}
 .knob .kval{font:500 10px/1 var(--mono);font-variant-numeric:tabular-nums;color:var(--fg);white-space:nowrap;max-width:100%;overflow:hidden;text-overflow:ellipsis}
 .knob.enum .kval{color:var(--glow)}
 .knob .klab{font:500 8.5px/1.25 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted);text-align:center}
-/* compact knobs (Sound tab): the value sits inside the ring */
+/* knobs show their value inside the ring */
 .knob.in{position:relative;padding-top:0}
 .knob.in .klab{font-size:8px;letter-spacing:.04em}
 .knob.in svg{width:50px;height:50px}
@@ -265,8 +282,14 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
 .sheet .setting .seg button{font-size:12px;padding:8px 4px}
 .sheet .check{font-size:12px;padding:7px 10px}
 .sheet .setting{gap:7px}
+.yrows{display:grid;gap:4px}
+.yrow{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;align-items:center;padding:8px 0;border-top:1px solid var(--line)}
+.yrow b{display:block;font:600 14px/1.2 var(--display)}
+.yrow small{display:block;font-size:12px;line-height:1.35;color:var(--muted);margin-top:2px}
+.yrow .seg{width:132px}
+.yrow .seg button{font:500 13px/1 var(--mono);padding:8px 4px}
 .pick{appearance:none;display:grid;gap:6px;justify-items:center;background:transparent;border:0;padding:3px 0;color:var(--fg);cursor:pointer;min-width:0}
-.pick .pbox{display:grid;place-items:center;min-width:64px;height:42px;padding:0 10px;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--pad);font:500 11px/1 var(--mono);color:var(--glow);white-space:nowrap}
+.pick .pbox{display:grid;place-items:center;min-width:64px;max-width:100%;height:50px;padding:0 8px;overflow:hidden;text-overflow:ellipsis;box-sizing:border-box;border:1px solid var(--line);border-radius:10px;background:var(--pad);font:500 11px/1 var(--mono);color:var(--glow);white-space:nowrap}
 .pick:hover .pbox{border-color:var(--faint)}
 .pick .klab{font:500 8.5px/1.25 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
 .menu{position:fixed;z-index:40;box-sizing:border-box;background:var(--surface);border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 40px -12px #000;overflow-y:auto;padding:6px;display:grid;gap:2px;overscroll-behavior:contain}
@@ -283,6 +306,7 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
   <section class="top">
     <header>
       <div class="brand"><h1>Heather</h1><div class="beats" id="beats" aria-hidden="true"><i></i><i></i><i></i><i></i></div></div>
+      <div class="dhost" id="dieHost"></div>
       <div class="hdr-right">
         <button type="button" class="ibtn" id="undoBtn" aria-label="Undo" disabled></button>
         <button type="button" class="ibtn" id="redoBtn" aria-label="Redo" disabled></button>
@@ -301,7 +325,6 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
       <div class="grid" id="grid"></div>
       <div class="side" id="sideTop"></div>
     </div>
-    <div class="toolbar" id="padBar"></div>
   </section>
 
   <section class="bottom">
@@ -347,11 +370,8 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
 
       <div class="pane" data-pane="play">
         <div class="group">
-          <div class="knobs" id="shapeKnobs" style="--n:3"></div>
-        </div>
-        <div class="group">
-          <h2>Playing style</h2>
-          <div id="perfH"></div>
+          <div class="halves"><div id="hStyle"></div><div id="perfH"></div></div>
+          <div class="halves" id="shapePlay"></div>
           <div class="knobs" id="perfKnobs" style="--n:5"></div>
           <div class="sub"><h3>Arpeggiator</h3><div class="knobs" id="arpKnobs" style="--n:5"></div></div>
         </div>
@@ -364,7 +384,7 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
             <div class="strum-hint" id="strumHint">Tap a pad to choose a chord</div>
           </div>
           <div class="knobs" id="strumKnobs" style="--n:4"></div>
-          <div class="knobs" id="strumShape" style="--n:4"></div>
+          <div class="halves" id="shapeStrum"></div>
         </div>
       </div>
 
@@ -399,16 +419,27 @@ select{appearance:none;-webkit-appearance:none;background:var(--pad) url("data:i
   </div>
 </div>
 
+<div class="sheet-bg" id="yBg" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="yTitle">
+    <div class="sheet-head">
+      <h3 id="yTitle">Strum strip Y axis</h3>
+      <button type="button" class="ibtn" id="yDone" aria-label="Close"></button>
+    </div>
+    <p class="note">Assign any of these to the strip's height. The arrow shows which way the value grows: ↑ means more toward the top, ↓ more toward the bottom.</p>
+    <div id="yRows" class="yrows"></div>
+  </div>
+</div>
+
 <div class="sheet-bg" id="setBg" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="setTitle">
     <div class="sheet-head">
       <h3 id="setTitle">Settings</h3>
       <button type="button" class="ibtn" id="setDone" aria-label="Close"></button>
     </div>
-    <div class="setting"><div class="eyebrow">Styles on the Style knob</div><div class="checks" id="styleChecks"></div></div>
-    <div class="setting"><div class="eyebrow">Inversion knob</div>
+    <div class="setting"><div class="eyebrow">Styles on the Style slider</div><div class="checks" id="styleChecks"></div></div>
+    <div class="setting"><div class="eyebrow">Inversion slider</div>
       <div class="seg" data-key="liveInv"><button type="button" data-v="1">Change live</button><button type="button" data-v="0">Next chord</button></div></div>
-    <div class="setting"><div class="eyebrow">Voicing knob</div>
+    <div class="setting"><div class="eyebrow">Voicing slider</div>
       <div class="seg" data-key="liveVoice"><button type="button" data-v="1">Change live</button><button type="button" data-v="0">Next chord</button></div></div>
     <div class="setting"><div class="eyebrow">Fader glide times</div><div class="knobs" id="glideKnobs" style="--n:5"></div></div>
     <div class="setting"><div class="eyebrow">Vibrato applies to</div>
@@ -512,6 +543,21 @@ const BAR = 4;
 const PPQ = 24;
 const STYLE_KEYS = ['pad','stab','broken','arp'];
 const STYLE_NAMES = {pad:'Pad', stab:'Stabs', broken:'Broken', arp:'Arp'};
+// The Style slider moves through these stops in order, blending between neighbours. Each stop is a style plus the note
+// choice (for stabs and arps) or grouping (for broken chords) that suits it, so there are no separate Notes or Broken controls.
+const STOPS = [
+  {kind:'pad', n:'Pad'},
+  {kind:'stab', notes:'all', n:'Stabs'},
+  {kind:'stab', notes:'upper', n:'Upper stabs'},
+  {kind:'stab', notes:'bass', n:'Bass pulse'},
+  {kind:'broken', broken:'bassup', n:'Bass+chord'},
+  {kind:'broken', broken:'oddeven', n:'Odd/even'},
+  {kind:'broken', broken:'outer', n:'Outer/inner'},
+  {kind:'broken', broken:'three', n:'Three'},
+  {kind:'broken', broken:'alberti', n:'Alberti'},
+  {kind:'arp', notes:'all', n:'Arp'},
+  {kind:'arp', notes:'upper', n:'Upper arp'}
+];
 const PATS = (() => {
   const out = [];
   for (let m = 0; m < 128; m++){
@@ -524,9 +570,7 @@ const PATS = (() => {
   return out.map(o => o.bits);
 })();
 const RATES = [[24,'1/4'],[12,'1/8'],[8,'1/8T'],[6,'1/16'],[4,'1/16T'],[3,'1/32']];
-const ARP_MODES = [['up','Up'],['down','Down'],['updown','Up-down'],['converge','Converge'],['diverge','Diverge'],['random','Random'],['other','Rnd other'],['other2','Rnd other²'],['rloop','Rnd loop']];
-const NOTES = [['all','All'],['upper','Upper'],['outer','Outer'],['bass','Bass'],['top','Top']];
-const BROKEN = [['bassup','Bass/rest'],['oddeven','Odd/even'],['halves','Low/high'],['outer','Out/in'],['three','Three'],['overlap','Overlap'],['alberti','Alberti'],['rgroup','Rnd groups']];
+const ARP_MODES = [['up','Up'],['down','Down'],['updown','Up/dn'],['converge','Conv'],['diverge','Div'],['random','Rand'],['other','Rnd≠'],['other2','Rnd≠²'],['rloop','Loop']];
 
 /* ---------- Synth tables ---------- */
 // One analog layer per voice: two oscillators, a square sub an octave down, and noise, into a filter and amp
@@ -586,14 +630,14 @@ const PAL = {
 const PANE_PAL = ['ember', 'rose', 'lilac', 'brass', 'tide'], LAST_PANE = PANE_PAL.length - 1;
 
 /* ---------- State ---------- */
-const DEF_PERF = {style:0, density:1, swing:0, gate:.6, accent:.5, notes:'all', broken:'bassup', arp:'up', rate:6, oct:1};
+const DEF_PERF = {style:0, stops:1, density:1, swing:0, gate:.6, accent:.5, arp:'up', rate:6, oct:1, rests:'hold'};
 const DEF_CELLS = [{r:0,q:'maj9'},{r:2,q:'m9'},{r:4,q:'m7'},{r:5,q:'maj7s11'},{r:7,q:'13'},{r:9,q:'m9'},{r:10,q:'69'},{r:4,q:'7b9'},{r:8,q:'maj7'}];
 const S = {cells:DEF_CELLS.map(c => ({...c})), locks:Array(9).fill(false), key:0, mode:'major', chroma:.3, complexity:.6,
   bpm:90, latch:true, glide:.35, dev:.3, voicing:.4, inversion:0, topVoice:0, prog:Array(9).fill(null), progLocks:Array(9).fill(false), pane:0,
   glideAll:true, landMode:true, glideMode:'nearest', slide:true, smartInv:false, scopeOpen:true, showDegree:true,
   topVib:false, liveInv:true, liveVoice:true, arpReset:false, glides:{top:.2, inv:.2, voice:.2},
   styles:{pad:true, stab:true, broken:true, arp:true}, widthMode:'lr',
-  strumOct:2, strumQ:6, strumHold:'sustain', strumY:'none', vibDepth:0, vibAll:true,
+  strumPoly:6, strumQ:6, strumHold:'sustain', strumY:{}, vibDepth:0, vibAll:true,
   rand:{cat:'any'}, synth:DEF_SYNTH(), perf:{...DEF_PERF}};
 const STORE = 'heather-v6';
 try {
@@ -602,6 +646,12 @@ try {
     d = JSON.parse(localStorage.getItem('heather-v5') || 'null');
     // v6: Strum became its own tab before Sound, and its timing names a note value instead of following the arp
     if (d){ if ((d.pane | 0) === 3) d.pane = 4; if (d.strumQ !== 'free') d.strumQ = 6; if (d.strumBright) d.strumY = 'b'; }
+  }
+  // v7: Style moved from four styles to the stops list; keep the same kind of style
+  if (d && d.perf && !d.perf.stops){
+    const kinds = STYLE_KEYS.filter(k => !d.styles || d.styles[k] !== false), kind = kinds[Math.round(+d.perf.style || 0)] || 'pad';
+    const en = STOPS.filter(st => !d.styles || d.styles[st.kind] !== false);
+    d.perf.style = Math.max(0, en.findIndex(st => st.kind === kind)); d.perf.stops = 1;
   }
   // the held-note choice grew a third option, so the old on/off became a name
   if (d && 'strumRepeat' in d && !('strumHold' in d)) d.strumHold = d.strumRepeat ? 'repeat' : 'sustain';
@@ -642,10 +692,12 @@ if (!['nearest','random','far'].includes(S.glideMode)) S.glideMode = 'nearest';
 if (!['random','lr','rl','center'].includes(S.widthMode)) S.widthMode = 'lr';
 if (S.strumQ !== 'free' && ![3, 4, 6, 8, 12].includes(+S.strumQ)) S.strumQ = 6;
 if (S.strumQ !== 'free') S.strumQ = +S.strumQ;
-if (!['none','b','r','br','bR'].includes(S.strumY)) S.strumY = 'none';
+// the Y axis was one of a few fixed pairings; it's now a set of assignments, each up (1) or down (-1)
+if (typeof S.strumY === 'string') S.strumY = {b:{bright:1}, r:{release:1}, br:{bright:1, release:1}, bR:{bright:1, release:-1}}[S.strumY] || {};
+if (!S.strumY || typeof S.strumY !== 'object') S.strumY = {};
+S.strumPoly = clamp(Math.round(+S.strumPoly || 6), 1, 10);
 if (!['sustain','repeat','arp'].includes(S.strumHold)) S.strumHold = 'sustain';
 S.vibDepth = clamp(+S.vibDepth || 0, 0, 1);
-S.strumOct = clamp(Math.round(+S.strumOct || 2), 1, 4);
 if (!STYLE_KEYS.some(k => S.styles[k])) S.styles.pad = true;
 S.pane = clamp(S.pane | 0, 0, 4);
 S.glide = clamp(+S.glide || 0, 0, 1);
@@ -653,9 +705,9 @@ S.topVoice = clamp(+S.topVoice || 0, -1, 1);
 S.inversion = clamp(Math.round(+S.inversion || 0), -6, 6);
 S.perf.density = clamp(Math.round(S.perf.density), 0, PATS.length - 1);
 if (!RATES.some(r => r[0] === S.perf.rate)) S.perf.rate = 6;
-if (!BROKEN.some(b => b[0] === S.perf.broken)) S.perf.broken = 'bassup';
+if (!['hold','skip'].includes(S.perf.rests)) S.perf.rests = 'hold';
 S.synth.layers.forEach(L => { L.oct = clamp(Math.round(L.oct || 0), -1, 1); });
-const enStyles = () => STYLE_KEYS.filter(k => S.styles[k]);
+const enStyles = () => STOPS.filter(st => S.styles[st.kind]);
 S.perf.style = clamp(+S.perf.style || 0, 0, enStyles().length - 1);
 
 /* progression slots: 9 to start, a new row of 3 appears once the last row is full */
@@ -669,7 +721,7 @@ function progBounds(){ let f = -1, l = -1; S.prog.forEach((c, i) => { if (c){ if
 normProg();
 
 /* ---------- Save, and global undo / redo ---------- */
-const UNDO_KEYS = ['cells','locks','prog','progLocks','key','mode','chroma','complexity','synth','perf','bpm','voicing','inversion','topVoice','glide','dev','strumQ','strumOct','strumHold','strumY','vibDepth'];
+const UNDO_KEYS = ['cells','locks','prog','progLocks','key','mode','chroma','complexity','synth','perf','bpm','voicing','inversion','topVoice','glide','dev','strumQ','strumPoly','strumHold','strumY','vibDepth'];
 let saveT, cpT, lastSnap = null; const HIST = [], FUT = [];
 function snapState(){ const o = {}; UNDO_KEYS.forEach(k => o[k] = S[k]); return JSON.stringify(o); }
 function persist(){ clearTimeout(saveT); saveT = setTimeout(() => { try { localStorage.setItem(STORE, JSON.stringify(S)); } catch (e) {} }, 250); }
@@ -972,9 +1024,10 @@ function Engine(ctx, opt = {}){
   bus.connect(dry); bus.connect(conv); conv.connect(wet); dry.connect(comp); wet.connect(comp); comp.connect(master); master.connect(ctx.destination);
   const bendSrc = ctx.createConstantSource(); bendSrc.offset.value = 0; bendSrc.start();
   // Vibrato: one LFO feeds every voice through its own gain, so it can reach all notes or just the top voice.
-  // The Vibrato fader sets depth (up to ±VIB_MAX cents), and the rate rises with it from 3.5 Hz to 7 Hz.
+  // The Vibrato fader sets depth (up to ±VIB_MAX cents), and the rate rises with it from 3.5 Hz to 7.5 Hz.
   const vibLfo = ctx.createOscillator(); vibLfo.frequency.value = 3.5; vibLfo.start();
-  const VIB_MAX = 60;
+  // depth follows a curve (d^2.2) so the lower half stays subtle and the top end reaches ±80 cents
+  const VIB_MAX = 80, vibCents = d => Math.pow(d, 2.2) * VIB_MAX;
   const noiseBuf = (() => { const b = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate), d = b.getChannelData(0); for (let i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1; return b; })();
   const voices = [];
   const beatAt = t => st.ba + (t - st.ta) * S.bpm / 60;
@@ -1014,9 +1067,10 @@ function Engine(ctx, opt = {}){
     L.a.o.type = e.w1; L.b.o.type = e.w2; set(L.b.g.gain, .7 * e.mix); set(L.a.o.detune, f); set(L.b.o.detune, f + e.detune);
     set(L.s.o.detune, f); set(L.s.g.gain, .45 * e.sub); set(L.n.gain, .35 * e.noise);
   }
-  function trig(L, t, vel){
+  // aMul scales the attack time (the strum strip's Y axis can turn a pluck into a bowed swell)
+  function trig(L, t, vel, aMul){
     const P = S.synth.layers[L.li];
-    const A = Math.max(.002, P.aA), D = Math.max(.01, P.aD), lvl = vel, g = L.amp.gain;
+    const A = Math.max(.002, P.aA * (aMul || 1)), D = Math.max(.01, P.aD), lvl = vel, g = L.amp.gain;
     g.cancelScheduledValues(t); g.setTargetAtTime(lvl, t, A / 3); g.setTargetAtTime(lvl * P.aS, t + A, D / 4);
     const fa = Math.max(.002, P.fA), fd = Math.max(.01, P.fD);
     const d = L.filter.detune, c = P.fenv * 4800 * vel; d.cancelScheduledValues(t); d.setTargetAtTime(c, t, fa / 3); d.setTargetAtTime(c * P.fS, t + fa, fd / 4);
@@ -1029,7 +1083,7 @@ function Engine(ctx, opt = {}){
     const g = L.amp.gain; g.cancelScheduledValues(t); g.setTargetAtTime(floor * P.aS, t, R / 4);
     const d = L.filter.detune; d.cancelScheduledValues(t); d.setTargetAtTime(floor * P.fenv * 4800 * P.fS, t, fr / 4);
   }
-  const trigV = (v, t, vel) => v.layers.forEach(L => L && trig(L, t, vel));
+  const trigV = (v, t, vel, aMul) => v.layers.forEach(L => L && trig(L, t, vel, aMul));
   const relV = (v, t, floor, rMul) => v.layers.forEach(L => L && rel(L, t, floor, rMul));
   const maxR = () => Math.max(.05, ...S.synth.layers.filter(layerActive).map(P => P.aR));
   function destroyLayer(L){
@@ -1099,8 +1153,8 @@ function Engine(ctx, opt = {}){
   function setBend(c, tc){ bendSrc.offset.setTargetAtTime(c, now(), tc); }
   function applyVib(){
     const t = now(), d = S.vibDepth, top = st.cur && st.cur.voice;
-    vibLfo.frequency.setTargetAtTime(3.5 + 3.5 * d, t, .05);
-    allV().forEach(v => v.vibAmt.gain.setTargetAtTime(S.vibAll || v === top ? d * d * VIB_MAX : 0, t, .05));
+    vibLfo.frequency.setTargetAtTime(3.5 + 4 * d, t, .05);
+    allV().forEach(v => v.vibAmt.gain.setTargetAtTime((S.vibAll || v === top ? vibCents(d) : 0) + (v.yVib || 0), t, .05));
   }
   let vibVoice = null;
   function topVibrato(x){
@@ -1227,12 +1281,14 @@ function Engine(ctx, opt = {}){
     const A = en[lo], B = en[Math.min(lo + 1, en.length - 1)];
     return {A, B, f:B === A ? 0 : f};
   }
-  function perfOn(){ const {A, B, f} = styleAt(); return !(A === 'pad' && (f < .001 || B === 'pad')); }
-  function perfFloor(){ const {A, f} = styleAt(); return A === 'pad' ? 1 - f : 0; }
+  function perfOn(){ const {A, B, f} = styleAt(); return !(A.kind === 'pad' && (f < .001 || B.kind === 'pad')); }
+  function perfFloor(){ const {A, f} = styleAt(); return A.kind === 'pad' ? 1 - f : 0; }
+  // which stop plays this tick: from Pad toward a style, that style over a sustain floor; between two styles, a repeating two-bar mix
   function region(tk){
     const {A, B, f} = styleAt();
-    if (A === 'pad') return {kind:B, floor:1 - f};
-    return {kind:hash(tk % (PPQ * 8)) < f ? B : A, floor:0};
+    if (A.kind === 'pad') return {stop:B, kind:B.kind, floor:1 - f};
+    const stop = hash(tk % (PPQ * 8)) < f ? B : A;
+    return {stop, kind:stop.kind, floor:0};
   }
   function setOct(v, o, t){ if (v.oct === o) return; v.octSrc.offset.setValueAtTime(o * 1200, t); v.oct = o; }
   function hitVoice(v, t, peak, dur, floor, o){
@@ -1247,14 +1303,14 @@ function Engine(ctx, opt = {}){
     if (mode === 'top') return [sl[sl.length - 1]];
     return sl;
   }
-  function brokenGroups(n){
+  function brokenGroups(n, kind){
     const I = [...Array(n).keys()];
     if (n < 2) return [I];
     const a = Math.max(1, Math.round(n / 3)), b = Math.max(a + 1, Math.round(2 * n / 3));
     const lo = I.slice(0, a), mid = I.slice(a, Math.min(b, n - 1)), hi = I.slice(Math.max(a, Math.min(b, n - 1)));
     const uniq = g => [...new Set(g)].sort((x, y) => x - y);
     let g;
-    switch (S.perf.broken){
+    switch (kind){
       case 'oddeven': g = [I.filter(i => i % 2 === 0), I.filter(i => i % 2)]; break;
       case 'halves': { const h = Math.ceil(n / 2); g = [I.slice(0, h), I.slice(h)]; break; }
       case 'outer': g = n < 3 ? [[0], I.slice(1)] : [[0, n - 1], I.slice(1, n - 1)]; break;
@@ -1282,12 +1338,12 @@ function Engine(ctx, opt = {}){
     const sl = curSlots(); if (!sl.length) return;
     chordChanged();
     let sel;
-    if (r.kind === 'broken'){ const gs = brokenGroups(sl.length); sel = gs[PF.hitN % gs.length].map(i => sl[i]).filter(Boolean); PF.hitN++; }
-    else sel = pickNotes(sl, S.perf.notes);
+    if (r.kind === 'broken'){ const gs = brokenGroups(sl.length, r.stop.broken); sel = gs[PF.hitN % gs.length].map(i => sl[i]).filter(Boolean); PF.hitN++; }
+    else sel = pickNotes(sl, r.stop.notes);
     sel.forEach(v => hitVoice(v, t, peak, dur, r.floor, 0));
   }
-  function arpStep(t, dur, peak, floor){
-    const sl = pickNotes(curSlots(), S.perf.notes); if (!sl.length) return;
+  function arpStep(t, dur, peak, floor, stop){
+    const sl = pickNotes(curSlots(), stop.notes); if (!sl.length) return;
     chordChanged();
     const P = S.perf, items = [];
     for (let o = 0; o < P.oct; o++) sl.forEach((v, k) => items.push({v, o, p:v.tgt + 12 * o, key:k + '/' + o}));
@@ -1313,6 +1369,11 @@ function Engine(ctx, opt = {}){
     hitVoice(it.v, t, peak, dur, floor || 0, it.o);
   }
   const swingDelay = d => S.perf.swing * .5 * d;
+  // accent by place in the bar, shared by every style: the downbeat is full, other beats a little softer, offbeats softest
+  function accentAt(t){
+    const b = ((beatAt(t) % BAR) + BAR) % BAR, onBeat = Math.abs(b - Math.round(b)) < .02;
+    return onBeat && Math.round(b) % BAR === 0 ? 1 : onBeat ? 1 - S.perf.accent * .2 : 1 - S.perf.accent * .6;
+  }
   function patternHit(t, barStep, r){
     const P = S.perf, bits = PATS[P.density], step = barStep % 8;
     let d = 1; while (d < 8 && !bits[(step + d) % 8]) d++;
@@ -1323,11 +1384,15 @@ function Engine(ctx, opt = {}){
     tickStrum(tk, t);
     if (sm.on || !perfOn() || !st.cur || Math.abs(t - PF.lastForce) < .02) return;
     const P = S.perf, r = region(tk), spb = 60 / S.bpm;
+    // The rhythm gates the arp too: each pattern step is one arp step at the arp's rate, so the rate sets how long the
+    // pattern lasts. A filled step plays the next note; an empty one rests, holding the arp's place or skipping a note.
     if (r.kind === 'arp'){
       if (tk % P.rate) return;
-      const n = tk / P.rate, dur = P.rate / PPQ * spb;
-      const sw = (P.rate === 12 || P.rate === 6) && n % 2 === 1 ? swingDelay(dur) : 0;
-      arpStep(t + sw, dur * P.gate, tk % PPQ === 0 ? 1 : 1 - P.accent * .5, r.floor);
+      const n = tk / P.rate, step = n % 8, bits = PATS[P.density], stepT = P.rate / PPQ * spb;
+      if (!bits[step]){ if (P.rests === 'skip') PF.arpPos++; return; }
+      let d = 1; while (d < 8 && !bits[(step + d) % 8]) d++;
+      const sw = (P.rate === 12 || P.rate === 6) && n % 2 === 1 ? swingDelay(stepT) : 0;
+      arpStep(t + sw, P.gate * d * stepT, accentAt(t), r.floor, r.stop);
       return;
     }
     if (tk % 6) return;
@@ -1339,7 +1404,7 @@ function Engine(ctx, opt = {}){
     if (sm.on || !perfOn() || !st.cur) return;
     PF.lastForce = T;
     const b = beatAt(T), r = region(Math.round(b * PPQ));
-    if (r.kind === 'arp'){ arpStep(T, S.perf.rate / PPQ * 60 / S.bpm * S.perf.gate, 1, r.floor); return; }
+    if (r.kind === 'arp'){ arpStep(T, S.perf.rate / PPQ * 60 / S.bpm * S.perf.gate, 1, r.floor, r.stop); return; }
     patternHit(T, ((Math.floor(b * 4 + .01) % 16) + 16) % 16, r);
   }
   function updateStyle(){
@@ -1360,23 +1425,24 @@ function Engine(ctx, opt = {}){
   // which 16th of the 8-step rhythm is sounding (or -1 when the rhythm isn't shaping playback)
   function rhythmStep(t){
     if (!perfOn() || !curSlots().length) return -1;
-    const {A, B} = styleAt(), kinds = A === 'pad' ? [B] : [A, B];
-    if (!kinds.some(k => k === 'stab' || k === 'broken')) return -1;
-    return ((Math.floor(beatAt(t) * 4 + 1e-6) % 8) + 8) % 8;
+    const {A, B} = styleAt(), kinds = (A.kind === 'pad' ? [B] : [A, B]).map(x => x.kind);
+    if (kinds.some(k => k === 'stab' || k === 'broken')) return ((Math.floor(beatAt(t) * 4 + 1e-6) % 8) + 8) % 8;
+    // the arp walks the pattern at its own rate
+    return kinds.includes('arp') ? ((Math.floor(beatAt(t) * PPQ / S.perf.rate + 1e-6) % 8) + 8) % 8 : -1;
   }
   function recClose(T){ if (!rec) return; rec.open.forEach(n => rec.events.push({...n, dur:T - n.t})); rec.open.clear(); }
 
   /* strum strip: played like strings. Each finger plucks the cell it touches and holds it at the envelope's sustain;
      moving on or lifting lets it ring out through the release. The cells are the chosen chord's voicing (Voicing and
-     Inversion apply, Top voice doesn't) repeated over the chosen octaves. While any finger is down the pad chord goes
+     Inversion apply, Top voice doesn't) repeated over four octaves. While any finger is down the pad chord goes
      quiet and the performer pauses. With Timing set to a note value, fingers only sound on that grid. */
   // with Holds set to Arp, fingers only choose cells; a shared player (arp) plucks them one at a time in the order they were touched
   const sm = {on:false, chord:null, fingers:new Map(), recent:[], arp:{voice:null, pos:0, lastT:-1}};
   function strumCells(){
     const c = sm.chord; if (!c) return [];
     const base = invert(voiceChord(c, S.voicing), S.inversion);
-    const n = S.strumOct, lo = -Math.floor((n - 1) / 2), out = new Set();
-    for (let o = lo; o < lo + n; o++) base.forEach(p => { const q = p + 12 * o; if (q >= 24 && q <= 108) out.add(q); });
+    const out = new Set();
+    for (let o = -1; o < 3; o++) base.forEach(p => { const q = p + 12 * o; if (q >= 24 && q <= 108) out.add(q); });
     return [...out].sort((a, b) => a - b);
   }
   const cellIdx = (u, n) => clamp(Math.floor(u * n), 0, n - 1);
@@ -1388,31 +1454,62 @@ function Engine(ctx, opt = {}){
     sm.recent.push(best); if (sm.recent.length > 3) sm.recent.shift();
     return best;
   }
-  // the strip's vertical axis: brightness rises toward the top; release rises toward the top (r) or toward the bottom (R)
-  const yBright = () => S.strumY.includes('b');
-  const relMul = y => S.strumY.includes('r') ? Math.pow(2, (y - .5) * 4) : S.strumY.includes('R') ? Math.pow(2, (.5 - y) * 4) : 1;
-  function setBright(v, y, t){
-    v.layers.forEach((L, li) => { if (L){ const c = S.synth.layers[li].cutoff; L.filter.frequency.setTargetAtTime(yBright() ? clamp(c * Math.pow(2, (y - .5) * 4), 40, 18000) : c, t, .015); } });
+  // The Y axis: each assigned parameter reads the finger's height as g (0..1), growing toward its arrow
+  const yg = (k, y) => { const d = S.strumY[k]; return d > 0 ? y : d < 0 ? 1 - y : null; };
+  const yMul = (k, y, oct) => { const g = yg(k, y); return g == null ? 1 : Math.pow(2, (g - .5) * oct); };
+  const relMul = y => yMul('release', y, 4);
+  // continuous parameters, updated as the finger moves: brightness, resonance, detune, per-note vibrato and string bend
+  function applyY(v, t){
+    const y = v.y;
+    v.layers.forEach((L, li) => {
+      if (!L) return;
+      const P = S.synth.layers[li], e = eOf(P), gd = yg('detune', y);
+      L.filter.frequency.setTargetAtTime(clamp(P.cutoff * yMul('bright', y, 4), 40, 18000), t, .015);
+      L.filter.Q.setTargetAtTime(P.reso * yMul('reso', y, 3), t, .015);
+      L.b.o.detune.setTargetAtTime(P.fine + e.detune * (gd == null ? 1 : .2 + 1.6 * gd) + (gd == null ? 0 : gd * 12), t, .015);
+    });
+    const gv = yg('vibrato', y); v.yVib = gv == null ? 0 : gv * 50;
+    v.vibAmt.gain.setTargetAtTime((S.vibAll ? vibCents(S.vibDepth) : 0) + v.yVib, t, .05);
+    const gb = yg('bend', y);
+    v.vibSrc.offset.setTargetAtTime(gb == null || v.gb0 == null ? 0 : clamp((gb - v.gb0) * 400, -200, 200), t, .02);
   }
   function ringOut(v, t){
     if (!v || v.state !== 'on') return;
     const m = relMul(v.y);
     relV(v, t, 0, m); v.state = 'releasing'; v.relT = t; v.relR = maxR() * m; v.freeAt = t + v.relR * 1.6 + .05; v.owner = null;
   }
-  function noteOn(f, k, cells, t, vel){
-    const p = cells[k];
-    let v = svoices.find(x => x.state === 'free' || (x.state === 'releasing' && x.freeAt <= t));
-    if (!v) v = svoices.filter(x => x.state === 'releasing').sort((a, b) => a.relT - b.relT)[0] || svoices.slice().sort((a, b) => a.startT - b.startT)[0];
-    if (v.owner && v.owner.voice === v) v.owner.voice = null;
+  // a voice for a new strummed note: a free one while under the Polyphony limit, otherwise the oldest still sounding
+  function grabVoice(t){
+    const sounding = svoices.filter(x => x.state === 'on' || (x.state === 'releasing' && x.freeAt > t));
+    let v = sounding.length < S.strumPoly ? svoices.find(x => !sounding.includes(x)) : null;
+    if (!v) v = sounding.sort((a, b) => a.startT - b.startT)[0] || svoices[0];
+    const o = v.owner; if (o){ if (o.voice === v) o.voice = null; if (o.voice2 === v) o.voice2 = null; }
+    return v;
+  }
+  function pluck(f, p, k, n, t, vel){
+    const v = grabVoice(t);
     setOct(v, 0, t);
     v.pitch.set(t, [{t, v:p}]); v.presEnv.set(t, [{t, v:LEVEL}]);
-    v.sk = k; v.sn = cells.length; v.panU = strumPan(k, cells.length); v.panPos = v.panU * S.synth.width;
+    v.sk = k; v.sn = n; v.panU = strumPan(k, n); v.panPos = v.panU * S.synth.width;
     v.pan.pan.cancelScheduledValues(t); v.pan.pan.setValueAtTime(v.panPos, t);
-    v.y = f.y; setBright(v, f.y, t); trigV(v, t, vel);
+    v.y = f.y; v.gb0 = yg('bend', f.y); applyY(v, t);
+    const gv = yg('velocity', f.y);
+    trigV(v, t, vel * (gv == null ? 1 : .2 + .8 * gv), yMul('attack', f.y, 6));
     v.state = 'on'; v.tgt = p; v.startT = t; v.relT = t; v.owner = f;
-    f.voice = v; f.played = p; f.idx = k; f.lastT = t;
+    return v;
   }
-  const noteOff = (f, t) => { if (f.voice && f.voice.owner === f) ringOut(f.voice, t); f.voice = null; };
+  function noteOn(f, k, cells, t, vel){
+    const p = cells[k];
+    f.voice = pluck(f, p, k, cells.length, t, vel); f.voice2 = null;
+    // octave double: in the half of the strip the arrow points to, add the note an octave further that way
+    const d = S.strumY.octave, go = yg('octave', f.y);
+    if (d && go > .5 && p + 12 * d >= 24 && p + 12 * d <= 108) f.voice2 = pluck(f, p + 12 * d, k, cells.length, t, vel * .8);
+    f.played = p; f.idx = k; f.lastT = t;
+  }
+  const noteOff = (f, t) => {
+    [f.voice, f.voice2].forEach(v => { if (v && v.owner === f) ringOut(v, t); });
+    f.voice = null; f.voice2 = null;
+  };
   function duckChord(t){
     voices.forEach(v => { if (v.state === 'on' || v.state === 'joining') v.layers.forEach(L => { if (L){ const g = L.amp.gain; g.cancelScheduledValues(t); g.setTargetAtTime(0, t, .03); } }); });
   }
@@ -1439,7 +1536,8 @@ function Engine(ctx, opt = {}){
   function strumMove(id, u, y){
     const f = sm.fingers.get(id); if (!f) return;
     f.u = u; f.y = y;
-    if (f.voice && f.voice.owner === f){ f.voice.y = y; if (yBright()) setBright(f.voice, y, now()); }
+    const tn = now();
+    [f.voice, f.voice2].forEach(v => { if (v && v.owner === f){ v.y = y; applyY(v, tn); } });
     if (S.strumQ !== 'free' || S.strumHold === 'arp') return;
     const cells = strumCells(); if (!cells.length) return;
     const k = cellIdx(u, cells.length);
@@ -1663,8 +1761,8 @@ async function offer(filename, blob){ if (!downloads) return; try { await downlo
 const refreshers = [];
 function fader(host, o){
   const el = document.createElement('div');
-  el.className = `fader ${o.vertical ? 'v' : 'h'}${o.bipolar ? ' bi' : ''}`;
-  el.id = o.id; el.tabIndex = 0; el.setAttribute('role', 'slider'); el.setAttribute('aria-label', o.label);
+  el.className = `fader ${o.vertical ? 'v' : 'h'}${o.bipolar ? ' bi' : ''}${o.half ? ' half' : ''}`;
+  if (o.id) el.id = o.id; el.tabIndex = 0; el.setAttribute('role', 'slider'); el.setAttribute('aria-label', o.label);
   if (o.vertical) el.setAttribute('aria-orientation', 'vertical');
   const ticks = o.ticks ? `<div class="fticks">${o.ticks.map(p => `<i style="${o.vertical ? 'bottom' : 'left'}:calc(6px + ${p} * (100% - 12px))"></i>`).join('')}</div>` : '';
   el.innerHTML = `<div class="ffill"></div>${ticks}<div class="fthumb"></div><span class="flab">${o.label}</span><span class="fval"></span>`;
@@ -1680,7 +1778,7 @@ function fader(host, o){
     el.setAttribute('aria-valuenow', Math.round(p * 100)); el.setAttribute('aria-valuetext', t);
   };
   const commit = v => { o.set(v); render(); save(); };
-  const setPos = p => { p = clamp(p, 0, 1); if (o.detents) for (const d of o.detents) if (Math.abs(p - d) < .03) p = d; commit(fromPos(p)); };
+  const setPos = p => { p = clamp(p, 0, 1); if (o.detents) for (const d of o.detents) if (Math.abs(p - d) < (o.detentW ?? .03)) p = d; commit(fromPos(p)); };
   const posFrom = e => { const r = el.getBoundingClientRect(); return o.vertical ? 1 - (e.clientY - r.top - 6) / (r.height - 12) : (e.clientX - r.left - 6) / (r.width - 12); };
   // Horizontal faders sit in panes that scroll vertically and swipe sideways. The browser used to claim some of those touches and
   // cancel the drag, which snapped the value back (Harmony and Complexity looked like they only flashed). Now the fader keeps every
@@ -1728,7 +1826,7 @@ function fader(host, o){
 // Knob; with `options` it steps through choices and its value line names the current one
 function knob(host, o){
   const el = document.createElement('div');
-  const inner = o.inner ?? host.classList.contains('inner');
+  const inner = o.inner ?? true;
   el.className = 'knob' + (o.options ? ' enum' : '') + (inner ? ' in' : ''); if (o.id) el.id = o.id; el.tabIndex = 0; el.setAttribute('role', 'slider'); el.setAttribute('aria-label', o.label);
   const R = 17, A0 = -2.356, A1 = 2.356;
   const pt = a => [24 + R * Math.sin(a), 24 - R * Math.cos(a)];
@@ -1844,9 +1942,10 @@ function dieSlider(host, o){
   };
   D.setLabel(o.label);
   let drag = null, rot = 0, rolledT;
-  const maxX = () => Math.max(10, el.clientWidth - die.offsetWidth - 10);
+  const maxX = () => Math.max(10, el.clientWidth - die.offsetWidth - 8);
   // the die rolls along the track as you drag (one turn per circumference), then tumbles home when you let go
-  const ROLL = 360 / (Math.PI * 36);
+  let ROLL = 360 / (Math.PI * 36);
+  requestAnimationFrame(() => { ROLL = 360 / (Math.PI * (die.offsetWidth || 36)); });
   const setX = x => { el.style.setProperty('--x', x + 'px'); };
   const setRot = r => el.style.setProperty('--rot', r + 'deg');
   const notify = () => { el.classList.toggle('armed', D.armed); o.onMode && o.onMode(); };
@@ -1879,18 +1978,26 @@ function dieSlider(host, o){
   };
   die.addEventListener('pointerup', up); die.addEventListener('pointercancel', up);
   die.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' '){ e.preventDefault(); spin(1); } });
-  // tapping the track rolls by that amount, but only a clean tap: a touch that moves (someone scrolling) or lingers does nothing
-  let tap = null;
-  el.addEventListener('pointerdown', e => { if (e.target.closest('.die')) return; tap = {id:e.pointerId, x:e.clientX, y:e.clientY, t:performance.now()}; });
-  el.addEventListener('pointermove', e => { if (tap && e.pointerId === tap.id && Math.hypot(e.clientX - tap.x, e.clientY - tap.y) > 8) tap = null; });
-  el.addEventListener('pointercancel', () => { tap = null; });
-  el.addEventListener('pointerup', e => {
-    const t0 = tap; tap = null;
-    if (!t0 || e.pointerId !== t0.id || e.target.closest('.die') || performance.now() - t0.t > 450) return;
-    const r = el.getBoundingClientRect(), a = clamp((e.clientX - r.left - die.offsetWidth / 2 - 4) / maxX(), 0, 1), x = a * maxX();
-    setX(x); setRot(rot + x * ROLL); amt.textContent = Math.round(a * 100) + '%'; D.dragging = true; notify();
-    setTimeout(() => { D.dragging = false; notify(); spin(a, x); }, 220);
+  // touching the track rolls the die straight to the finger; keep dragging to adjust, and letting go rolls by that amount
+  let track = null;
+  const trackX = e => { const r = el.getBoundingClientRect(); return clamp(e.clientX - r.left - die.offsetWidth / 2 - 3, 0, maxX()); };
+  const showX = x => { setX(x); setRot(rot + x * ROLL); amt.textContent = Math.round(x / maxX() * 100) + '%'; };
+  el.addEventListener('pointerdown', e => {
+    if (e.target.closest('.die') || (e.pointerType === 'mouse' && e.button !== 0)) return;
+    e.preventDefault(); try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    track = {id:e.pointerId, x:trackX(e)}; showX(track.x); D.dragging = true; notify();
   });
+  el.addEventListener('pointermove', e => {
+    if (!track || e.pointerId !== track.id) return;
+    el.classList.add('dragging'); track.x = trackX(e); showX(track.x);
+  });
+  const trackEnd = e => {
+    if (!track || e.pointerId !== track.id) return;
+    const x = track.x, a = x / maxX(); track = null;
+    el.classList.remove('dragging'); D.dragging = false; notify();
+    if (e.type === 'pointerup' && a > .02) spin(a, x); else { setX(0); setRot(rot); amt.textContent = ''; }
+  };
+  el.addEventListener('pointerup', trackEnd); el.addEventListener('pointercancel', trackEnd);
   D.active = () => D.held || D.armed;
   D.busy = () => D.held || D.armed || D.dragging;
   D.consume = () => { D.used = true; if (!D.held) D.armed = false; notify(); };
@@ -1948,7 +2055,11 @@ grid.addEventListener('pointerdown', e => {
   if (e.target.closest('.lock')){ act(() => { S.locks[idx] = !S.locks[idx]; }); renderPads(); return; }
   if (e.target.closest('.edit')){ ensureAudio(); openEditor(idx); return; }
   if (S.pane === 0 && die.active()){ if (!S.locks[idx]) rollPadsUI(() => { S.cells[idx] = generateOne(idx); }); die.consume(); return; }
-  if (S.pane === STRUM_PANE){ choose(idx); return; }
+  if (S.pane === STRUM_PANE){
+    // on the Strum tab a pad only chooses the chord, and sliding onto another pad chooses that one
+    try { el.setPointerCapture(e.pointerId); } catch (err) {}
+    touches.set(e.pointerId, {idx, strum:true}); markTouch(el, e); choose(idx); return;
+  }
   try { el.setPointerCapture(e.pointerId); } catch (err) {}
   markTouch(el, e);
   touches.set(e.pointerId, {idx, x0:e.clientX, y0:e.clientY}); lead = e.pointerId;
@@ -1956,6 +2067,11 @@ grid.addEventListener('pointerdown', e => {
 });
 grid.addEventListener('pointermove', e => {
   const t = touches.get(e.pointerId); if (!t || !E) return;
+  if (t.strum){
+    const el = document.elementFromPoint(e.clientX, e.clientY)?.closest?.('.pad');
+    if (el && grid.contains(el) && +el.dataset.i !== t.idx){ t.idx = +el.dataset.i; markTouch(el, e); choose(t.idx); }
+    return;
+  }
   if (t.drag){ moveGhost(e); return; }
   const gr = grid.getBoundingClientRect();
   if (S.cells[t.idx] && (e.clientY > gr.bottom + 14 || e.clientY < gr.top - 14 || e.clientX < gr.left - 14 || e.clientX > gr.right + 14)){
@@ -1973,13 +2089,14 @@ grid.addEventListener('pointermove', e => {
 function endPointer(e){
   const t = touches.get(e.pointerId); if (!t) return;
   touches.delete(e.pointerId);
+  if (t.strum) return;
   if (t.drag){ const i = slotAt(e.clientX, e.clientY); endGhost(); if (i >= 0 && S.cells[t.idx]) assignSlot(i, S.cells[t.idx]); }
   if (lead === e.pointerId){ lead = touches.size ? [...touches.keys()].pop() : null; if (lead == null && E) E.setBend(0, .06); }
   releaseHold();
 }
 grid.addEventListener('pointerup', endPointer);
 grid.addEventListener('pointercancel', endPointer);
-const sheetOpen = () => !$('#sheetBg').hidden || !$('#setBg').hidden;
+const sheetOpen = () => !$('#sheetBg').hidden || !$('#setBg').hidden || !$('#yBg').hidden;
 const KEYMAP = {'1':0,'2':1,'3':2,'4':3,'5':4,'6':5,'7':6,'8':7,'9':8,q:0,w:1,e:2,a:3,s:4,d:5,z:6,x:7,c:8};
 document.addEventListener('keydown', e => {
   if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'z' && !e.target.closest('input,select,textarea')){ e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
@@ -2109,57 +2226,67 @@ const fmtTime = v => v < .005 ? 'Off' : v < 1 ? Math.round(v * 1000) + ' ms' : v
 const fmtT = v => v < .005 ? 'Off' : v < 1 ? Math.round(v * 1000) + 'ms' : v.toFixed(1) + 's';
 const pct = v => Math.round(v * 100) + '%';
 const sgn = n => n === 0 ? '0' : (n > 0 ? '+' : '−') + Math.abs(n);
-// Style knob: continuous across the enabled styles. Each pure style holds a flat window of the knob's travel (WIN on either
-// side of it), so it's easy to land on; the blends fill the rest.
-const styleHost = document.createElement('div'); styleHost.style.display = 'grid'; $('#shapeKnobs').appendChild(styleHost);
-function buildStyleKnob(){
-  styleHost.innerHTML = '';
+// Style slider: moves through the enabled stops, blending between neighbours; each stop has a detent so it's easy to land on
+function buildStyleFader(){
+  const host = $('#hStyle'); host.innerHTML = '';
   const en = enStyles(), n = en.length;
   S.perf.style = clamp(S.perf.style, 0, n - 1);
-  const fmt = v => { if (n === 1) return STYLE_NAMES[en[0]]; const lo = Math.floor(v + 1e-6), f = v - lo; if (f < .001 || lo >= n - 1) return STYLE_NAMES[en[Math.min(n - 1, lo)]]; if (f > .999) return STYLE_NAMES[en[lo + 1]]; return `${STYLE_NAMES[en[lo]]}›${STYLE_NAMES[en[lo + 1]]}`; };
-  const WIN = .14, segs = Math.max(1, n - 1);
-  const fromPos = x => { const s = x * segs, i = Math.min(Math.floor(s), segs - 1), f = s - i; return i + clamp((f - WIN) / (1 - 2 * WIN), 0, 1); };
-  const toPos = v => { const i = Math.min(Math.floor(v + 1e-6), segs - 1), f = v - i; return (i + (f < 1e-6 ? 0 : f > 1 - 1e-6 ? 1 : WIN + f * (1 - 2 * WIN))) / segs; };
-  return knob(styleHost, {id:'kStyle', label:'Style', def:0, fromPos, toPos, fmt,
-    get:() => S.perf.style, set:v => { S.perf.style = n > 1 ? Math.round(v * 1000) / 1000 : 0; }});
+  const fmt = v => { if (n === 1) return en[0].n; const lo = Math.floor(v + 1e-6), f = v - lo; if (f < .001 || lo >= n - 1) return en[Math.min(n - 1, lo)].n; if (f > .999) return en[lo + 1].n; return `${en[lo].n} › ${en[lo + 1].n}`; };
+  return fader(host, {id:'fStyle', label:'Style', half:true, immediate:true, def:0, min:0, max:Math.max(1e-9, n - 1),
+    detents:n > 1 ? en.map((_, i) => i / (n - 1)) : [0], detentW:Math.min(.03, .28 / Math.max(1, n - 1)),
+    ticks:n > 2 ? en.slice(1, -1).map((_, i) => (i + 1) / (n - 1)) : null,
+    get:() => S.perf.style, set:v => { S.perf.style = n > 1 ? v : 0; if (E) E.resetGroups(); }, fmt});
 }
-let styleRender = buildStyleKnob();
+let styleRender = buildStyleFader();
 refreshers.push(() => styleRender());
+const sqHtml = v => `<span class="sq">${PATS[v].map(b => `<i${b ? ' class="on"' : ''}></i>`).join('')}</span>`;
+refreshers.push(fader($('#perfH'), {id:'rhythm', label:'Rhythm', half:true, def:1, kstep:1 / 127, get:() => S.perf.density, set:v => S.perf.density = v,
+  fromPos:x => Math.round(x * (PATS.length - 1)), toPos:v => v / (PATS.length - 1), fmt:v => PATS[v].join(''), html:sqHtml}));
 refreshers.push(fader($('#sideTop'), {id:'fTop', label:'Top voice', vertical:true, bipolar:true, immediate:true, def:0, detents:[.5], min:-1, max:1,
   get:() => S.topVoice, set:v => { S.topVoice = v; if (E) E.liveShape('top'); }, vibrato:() => S.topVib, onVib:x => E && E.topVibrato(x),
   fmt:v => { const st = Math.round(v * 12); return st === 0 ? '0' : sgn(st); }}));
 refreshers.push(fader($('#sideVib'), {id:'fVib', label:'Vibrato', vertical:true, immediate:true, def:0,
   get:() => S.vibDepth, set:v => { S.vibDepth = v; if (E) E.applyVib(); }, fmt:v => v < .01 ? 'Off' : pct(v)}));
-// Inversion and Voicing appear on both the Play and Strum tabs; the copies stay in step
+// Inversion and Voicing sliders appear on both the Play and Strum tabs; the copies stay in step
 const shapeR = [];
-function shapeKnobs(host){
-  shapeR.push(knob(host, {label:'Inversion', min:-6, max:6, step:1, bipolar:true, def:0,
-    get:() => S.inversion, set:v => { const ch = v !== S.inversion; S.inversion = v; if (ch && S.liveInv && E) E.liveShape('inv'); shapeR.forEach(r => r()); }, fmt:sgn}));
-  shapeR.push(knob(host, {label:'Voicing', def:.4, get:() => S.voicing, set:v => { S.voicing = v; if (S.liveVoice && E) E.liveShape('voice'); shapeR.forEach(r => r()); }, fmt:v => v < .1 ? 'Closed' : v > .9 ? 'Open' : pct(v)}));
+function shapeSliders(host){
+  shapeR.push(fader(host, {label:'Inversion', half:true, bipolar:true, immediate:true, def:0, kstep:1 / 12,
+    get:() => S.inversion, set:v => { const ch = v !== S.inversion; S.inversion = v; if (ch && S.liveInv && E) E.liveShape('inv'); shapeR.forEach(r => r()); },
+    fromPos:x => Math.round(x * 12 - 6), toPos:v => (v + 6) / 12, fmt:sgn}));
+  shapeR.push(fader(host, {label:'Voicing', half:true, immediate:true, def:.4,
+    get:() => S.voicing, set:v => { S.voicing = v; if (S.liveVoice && E) E.liveShape('voice'); shapeR.forEach(r => r()); }, fmt:v => v < .1 ? 'Closed' : v > .9 ? 'Open' : pct(v)}));
 }
-shapeKnobs($('#shapeKnobs'));
+shapeSliders($('#shapePlay'));
 refreshers.push(() => shapeR.forEach(r => r()));
-const sqHtml = v => `<span class="sq">${PATS[v].map(b => `<i${b ? ' class="on"' : ''}></i>`).join('')}</span>`;
-refreshers.push(fader($('#perfH'), {id:'rhythm', label:'Rhythm', def:1, kstep:1 / 127, get:() => S.perf.density, set:v => S.perf.density = v,
-  fromPos:x => Math.round(x * (PATS.length - 1)), toPos:v => v / (PATS.length - 1), fmt:v => PATS[v].join(''), html:sqHtml}));
 const pK = (host, o) => refreshers.push(knob($(host), {...o, def:DEF_PERF[o.k], get:() => S.perf[o.k], set:v => { S.perf[o.k] = o.num ? +v : v; if (o.then) o.then(); }}));
 pK('#perfKnobs', {id:'kGate', k:'gate', label:'Gate', min:.05, max:1, fmt:pct});
 pK('#perfKnobs', {id:'kAccent', k:'accent', label:'Accent', fmt:pct});
 pK('#perfKnobs', {id:'kSwing', k:'swing', label:'Swing', fmt:v => Math.round(50 + 25 * v) + '%'});
-pK('#perfKnobs', {id:'kNotes', k:'notes', label:'Notes', options:NOTES});
-pK('#perfKnobs', {id:'kBroken', k:'broken', label:'Broken', options:BROKEN, then:() => E && E.resetGroups()});
 pK('#arpKnobs', {id:'kArp', k:'arp', label:'Mode', options:ARP_MODES});
 pK('#arpKnobs', {id:'kRate', k:'rate', label:'Rate', options:RATES, num:true});
 pK('#arpKnobs', {id:'kOct', k:'oct', label:'Octaves', options:[[1,'1'],[2,'2'],[3,'3']], num:true});
+// what the arp does on an empty rhythm step: hold its place in the pattern, or skip a note silently
+pK('#arpKnobs', {id:'kRests', k:'rests', label:'Rests', options:[['hold','Hold'],['skip','Skip']]});
 
 /* ---------- Strum tab ---------- */
 // The strip plays like strings: each finger plucks the cell it touches and holds it, and the note rings out when the finger
 // moves on or lifts. Several fingers can play at once. Pads on this tab only choose the chord; the strip is the only thing that sounds.
 const strumEl = $('#strum'), strumCellsEl = $('#strumCells');
 const STRUM_Q = [['free','Free'],[3,'1/32'],[4,'1/16T'],[6,'1/16'],[8,'1/8T'],[12,'1/8']];
-const STRUM_Y = [['none','None','None'],['b','↑ Bright','↑ Brightness'],['r','↑ Release','↑ Release'],['br','↑Br ↑Rel','↑ Brightness  ↑ Release'],['bR','↑Br ↓Rel','↑ Brightness  ↓ Release']];
+// Y axis assignments: any of these can follow the strip's height, each growing upward (1) or downward (-1)
+const STRUM_Y = [
+  ['velocity','Vel','Velocity','Louder toward the arrow.'],
+  ['bright','Bright','Brightness','The filter opens toward the arrow.'],
+  ['reso','Res','Resonance','A sharper filter peak toward the arrow.'],
+  ['attack','Atk','Attack','A slower, bowed attack toward the arrow; a sharp pluck at the other end.'],
+  ['release','Rel','Release','A longer ring-out toward the arrow.'],
+  ['bend','Bend','String bend','Moving a held finger toward the arrow bends its note up, like bending a string; the other way bends it down. Up to a whole tone.'],
+  ['vibrato','Vib','Vibrato','More vibrato on each note toward the arrow, on top of the Vibrato fader.'],
+  ['detune','Det','Detune','The two oscillators spread further apart toward the arrow.'],
+  ['octave','Oct','Octave double','In the half of the strip the arrow points to, each note gets a second one an octave further that way.']
+];
 // what a finger resting on a cell does: hold it at sustain, repeat it at the timing rate, or arpeggiate every held cell in the order touched
-const STRUM_HOLD = [['sustain','Sustain'],['repeat','Repeat'],['arp','Arp']];
+const STRUM_HOLD = [['sustain','Sus'],['repeat','Rep'],['arp','Arp']];
 const strumFingers = new Set();
 let strumSig = '', strumMarks = '';
 function strumPos(e){
@@ -2179,7 +2306,7 @@ const strumEnd = e => { if (!strumFingers.delete(e.pointerId)) return; if (E) E.
 strumEl.addEventListener('pointerup', strumEnd); strumEl.addEventListener('pointercancel', strumEnd);
 function renderStrum(){
   const info = E ? E.strumInfo() : {cells:[], held:new Set(), ring:new Set(), root:-1}, cells = info.cells;
-  strumEl.classList.toggle('ylive', S.strumY !== 'none');
+  strumEl.classList.toggle('ylive', Object.values(S.strumY).some(Boolean));
   const sig = cells.join(',') + '|' + info.root + '|' + useSharps();
   if (sig !== strumSig){
     strumSig = sig; strumMarks = '';
@@ -2197,20 +2324,37 @@ function renderStrum(){
     [...strumCellsEl.children].forEach((el, i) => { const on = info.held.has(cells[i]); el.classList.toggle('on', on); el.classList.toggle('ring', !on && info.ring.has(cells[i])); });
   }
 }
-// a labelled box that opens a list, for choices whose names are too long for a knob
-function picker(host, o){
-  const b = document.createElement('button'); b.type = 'button'; b.className = 'pick'; if (o.id) b.id = o.id;
-  b.innerHTML = `<span class="pbox"></span><span class="klab">${o.label}</span>`; host.appendChild(b);
-  const render = () => { const c = o.options.find(x => String(x[0]) === String(o.get())) || o.options[0]; b.querySelector('.pbox').textContent = c[1]; b.setAttribute('aria-label', `${o.label}: ${c[2] || c[1]}`); };
-  b.addEventListener('click', () => showMenu(b.querySelector('.pbox'), [[o.label, o.options.map(x => [x[0], x[2] || x[1]])]], o.get(), v => { act(() => o.set(v)); render(); }));
-  render(); return render;
-}
 const sK = (o) => refreshers.push(knob($('#strumKnobs'), {...o, get:() => S[o.k], set:v => { S[o.k] = o.num ? +v : v; }}));
 sK({id:'kStrumQ', k:'strumQ', label:'Timing', options:STRUM_Q, def:6});
-sK({id:'kStrumOct', k:'strumOct', label:'Octaves', options:[[1,'1'],[2,'2'],[3,'3'],[4,'4']], num:true, def:2});
+// how many strummed notes can sound at once; past that, the oldest is cut (the pads on other tabs aren't limited)
+sK({id:'kStrumPoly', k:'strumPoly', label:'Polyphony', min:1, max:10, step:1, def:6, fmt:v => String(Math.round(v))});
 sK({id:'kStrumHold', k:'strumHold', label:'Holds', options:STRUM_HOLD, def:'sustain'});
-refreshers.push(picker($('#strumKnobs'), {id:'pStrumY', label:'Y axis', options:STRUM_Y, get:() => S.strumY, set:v => { S.strumY = v; }}));
-shapeKnobs($('#strumShape'));
+// Y axis: a box summarising the assignments, which opens the dialog that sets them
+const yBtn = document.createElement('button'); yBtn.type = 'button'; yBtn.className = 'pick'; yBtn.id = 'pStrumY';
+yBtn.innerHTML = '<span class="pbox"></span><span class="klab">Y axis</span>'; $('#strumKnobs').appendChild(yBtn);
+const yOn = () => STRUM_Y.filter(([k]) => S.strumY[k]);
+function renderYBtn(){
+  const on = yOn(), arrow = k => S.strumY[k] > 0 ? '↑' : '↓';
+  yBtn.querySelector('.pbox').textContent = !on.length ? 'None' : on.length === 1 ? arrow(on[0][0]) + ' ' + on[0][1] : `${arrow(on[0][0])}${on[0][1]} +${on.length - 1}`;
+  yBtn.setAttribute('aria-label', 'Y axis: ' + (on.length ? on.map(([k, , n]) => `${n} ${S.strumY[k] > 0 ? 'up' : 'down'}`).join(', ') : 'nothing assigned'));
+}
+refreshers.push(renderYBtn); renderYBtn();
+const yBg = $('#yBg');
+function renderYRows(){
+  $('#yRows').innerHTML = STRUM_Y.map(([k, , name, desc]) => `<div class="yrow"><div><b>${name}</b><small>${desc}</small></div>
+    <div class="seg" data-y="${k}" aria-label="${name}">${[[0,'—','Off'],[1,'↑','Up'],[-1,'↓','Down']].map(([v, l, a]) => `<button type="button" data-v="${v}" aria-label="${a}" aria-pressed="${(S.strumY[k] || 0) === v}">${l}</button>`).join('')}</div></div>`).join('');
+}
+yBtn.addEventListener('click', () => { renderYRows(); yBg.hidden = false; });
+$('#yDone').innerHTML = ICON.x;
+$('#yDone').addEventListener('click', () => yBg.hidden = true);
+yBg.addEventListener('click', e => {
+  if (e.target === yBg) return (yBg.hidden = true);
+  const b = e.target.closest('.seg button'); if (!b) return;
+  const k = b.closest('[data-y]').dataset.y, v = +b.dataset.v;
+  act(() => { S.strumY = {...S.strumY, [k]:v}; if (!v) delete S.strumY[k]; });
+  renderYRows(); renderYBtn();
+});
+shapeSliders($('#shapeStrum'));
 
 /* ---------- Chords pane ---------- */
 refreshers.push(fader($('#genFaders'), {id:'chroma', label:'Harmony', def:.3, get:() => S.chroma, set:v => S.chroma = v, fmt:v => v < .08 ? 'Diatonic' : v > .92 ? 'Chromatic' : pct(v)}));
@@ -2314,21 +2458,25 @@ refreshers.push(knob($('#kChar'), {label:'Character', inner:true, options:[['any
 // Play: the playing-style settings. Each one changes with a chance that grows with the amount; continuous ones move that far toward a random value.
 function rollPlay(a){
   const P = S.perf, ch = () => Math.random() < .2 + .8 * a, n = enStyles().length, toward = (v, lo, hi) => lerp(v, rnd(lo, hi), .3 + .7 * a);
-  if (n > 1 && ch()) P.style = Math.round(toward(P.style, 0, n - 1) * 4) / 4;
+  if (n > 1 && ch()) P.style = Math.random() < .75 ? Math.floor(Math.random() * n) : Math.round(rnd(0, n - 1) * 4) / 4;
   if (ch()) P.density = clamp(Math.round(toward(P.density, 0, PATS.length - 1)), 0, PATS.length - 1);
   if (ch()) P.gate = toward(P.gate, .15, .95);
   if (ch()) P.accent = toward(P.accent, 0, 1);
   if (ch()) P.swing = toward(P.swing, 0, .6);
-  [['notes', NOTES], ['broken', BROKEN], ['arp', ARP_MODES], ['rate', RATES], ['oct', [[1], [2], [3]]]].forEach(([k, opts]) => { if (ch()) P[k] = pick(opts)[0]; });
+  [['arp', ARP_MODES], ['rate', RATES], ['oct', [[1], [2], [3]]], ['rests', [['hold'], ['skip']]]].forEach(([k, opts]) => { if (ch()) P[k] = pick(opts)[0]; });
   if (E) E.resetGroups();
 }
-// Strum: timing, octaves, held-note behaviour and what the strip's height controls
+// Strum: timing, polyphony, holds and the Y axis assignments (up to three at a time, so the strip stays playable)
 function rollStrum(a){
   const ch = () => Math.random() < .2 + .8 * a;
   if (ch()) S.strumQ = pick(STRUM_Q)[0];
-  if (ch()) S.strumOct = 1 + Math.floor(Math.random() * 4);
+  if (ch()) S.strumPoly = 1 + Math.floor(Math.random() * 10);
   if (ch()) S.strumHold = pick(STRUM_HOLD)[0];
-  if (ch()) S.strumY = pick(STRUM_Y)[0];
+  if (ch()){
+    const y = {}, n = Math.floor(Math.random() * 4);
+    shuffle(STRUM_Y.map(([k]) => k)).slice(0, n).forEach(k => { y[k] = Math.random() < .7 ? 1 : -1; });
+    S.strumY = y;
+  }
 }
 const DIE_TABS = [
   {label:'Chords', target:'pad', roll:a => rollPadsUI(() => rollPads(a))},
@@ -2337,7 +2485,7 @@ const DIE_TABS = [
   {label:'Strum', roll:a => { act(() => rollStrum(a)); refreshAll(); flash([...document.querySelectorAll('#strumKnobs>*')]); }},
   {label:'Sound', roll:a => { act(() => randomizeLayer(a)); if (E) E.rebuildLayer(0); renderLayerPanel(); flash([$('#layerGroup'), ...document.querySelectorAll('#layerPanel .knob')]); }}
 ];
-const die = dieSlider($('#padBar'), {id:'die', label:DIE_TABS[S.pane].label, target:() => DIE_TABS[S.pane].target, onMode:() => gridModes(), onRoll:a => DIE_TABS[S.pane].roll(a)});
+const die = dieSlider($('#dieHost'), {id:'die', label:DIE_TABS[S.pane].label, target:() => DIE_TABS[S.pane].target, onMode:() => gridModes(), onRoll:a => DIE_TABS[S.pane].roll(a)});
 
 /* ---------- Panes & palettes ---------- */
 const panes = $('#panes'), tabBtns = [...document.querySelectorAll('#tabs button')];
@@ -2468,7 +2616,7 @@ sheetBg.addEventListener('click', e => {
 $('#shName').addEventListener('click', () => { ensureAudio(); if (E) E.preview(editIdx); });
 $('#shDone').addEventListener('click', closeEditor);
 $('#shClear').addEventListener('click', () => { act(() => { S.cells[editIdx] = null; }); renderSheet(); renderPads(); });
-document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeEditor(); setBg.hidden = true; } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape'){ closeEditor(); setBg.hidden = true; $('#yBg').hidden = true; } });
 
 /* ---------- Scope & frame loop ---------- */
 const cv = $('#scope'), g2 = cv.getContext('2d'); const WIN = 3.5;

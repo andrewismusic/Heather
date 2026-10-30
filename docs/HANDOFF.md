@@ -9,7 +9,7 @@ Heather is a 3×3 chord-pad instrument. What sets it apart is per-note voice-lea
 What the prototype already settles:
 
 - **The glide engine:** pairing modes, branch and join behaviour, spread, land-on-beat timing, and live re-voicing from the faders.
-- **A performer layer:** a style slider that morphs Pad → Stabs → Broken → Arp, a rhythm library of 128 patterns, broken-chord groupings, and an arpeggiator with novel random modes.
+- **A performer layer:** a style slider that moves through curated stops (pads, stabs, broken chords, arps), a rhythm library of 128 patterns that also gates the arpeggiator, and an arpeggiator with novel random modes.
 - **A generator:** key and mode, Harmony and Complexity controls, locks, and die-slider randomizers with an amount set by how far you drag.
 - **A progression builder:** slots that mirror the pads, held blanks, play from any slot, and randomizing with musical rules.
 - **A one-layer analog synth:** two oscillators, sub and noise, filter, amp and filter ADSR, a pitch envelope and presets.
@@ -98,14 +98,14 @@ The engine turns a chord plus five performance values (voicing, inversion, top v
 
 ### Performer
 
-- **Style slider:** morphs between the enabled styles (Pad, Stabs, Broken, Arp, each switchable in settings).
-  - **From Pad toward any style:** sets a sustain floor of 1 − f between hits.
-  - **Between two non-pad styles:** each tick picks style B when a hash of (tick mod 8 beats) < f, so the mix repeats every two bars instead of shuffling.
+- **Style slider** (`STOPS`): moves through stops, each a style plus the note choice or grouping that suits it: Pad, Stabs, Upper stabs, Bass pulse, Bass+chord, Odd/even, Outer/inner, Three, Alberti, Arp, Upper arp. Settings choose which kinds (pad, stabs, broken, arp) appear. There are no separate Notes or Broken controls.
+  - **From Pad toward any stop:** sets a sustain floor of 1 − f between hits.
+  - **Between two non-pad stops:** each tick picks stop B when a hash of (tick mod 8 beats) < f, so the mix repeats every two bars instead of shuffling.
   - **Speed:** the style slider is always instant.
 - **Rhythm** (`PATS`): all 128 eight-step patterns of 16th notes that start on step 1, ordered by number of hits, then by evenness (variance of the gaps). Each pattern repeats twice per bar.
-- **Gate** = a fraction of the gap to the next hit. **Accent:** bar downbeat 1, other quarter notes 1 − 0.2a, everything else 1 − 0.6a. **Swing:** shown as 50–75%; the off-beat delay = swing × 0.5 × step length.
-- **Notes filter** (stabs and arp): All, Upper, Outer, Bass, Top.
-- **Broken groupings** (`brokenGroups`): Bass / rest, Odd / even, Low / high, Outer / inner, Three groups, Overlapping, Alberti, and Random groups. Random groups stay fixed until the Broken control or the style slider moves.
+- **Rhythm gates the arp:** each pattern step is one arp step at the arp's rate, so the rate sets how long the 8-step pattern lasts (half a bar at 1/16, a bar at 1/8). A filled step plays the next note; on an empty step the arp rests, either holding its place or skipping a note silently (the Rests knob).
+- **Gate** = a fraction of the gap to the next hit. **Accent** follows the place in the bar for every style: downbeat 1, other quarter notes 1 − 0.2a, everything else 1 − 0.6a. **Swing:** shown as 50–75%; the off-beat delay = swing × 0.5 × step length.
+- **Note choices** (`pickNotes`, used by stops): All, Upper, Outer, Bass, Top. **Broken groupings** (`brokenGroups`): Bass / rest, Odd / even, Low / high, Outer / inner, Three groups, Overlapping, Alberti.
 - **Arp** (`arpStep`): Up, Down, Up-down, Converge, Diverge, Random, Random other (never the same note twice in a row), Random other other (a note can repeat only after two others) and Random loop (a fresh order each chord, then repeated). Rates 1/4 to 1/32 including triplets; 1–3 octaves; keep place or restart on chord change.
 - **Hits:** a hit retriggers the voice's envelopes, then releases to the floor after the gate. A newly launched chord always gets a hit on its beat. Releasing a pad with Hold off cancels hits already scheduled.
 
@@ -162,15 +162,14 @@ The screen splits in two. The top half is fixed and is where you play. The botto
 ### Layout
 
 - **Top, fixed:**
-  - A title bar with the name, the beat metronome, undo, redo, Hold and settings.
+  - A title bar: the name with the beat metronome under it, a compact die slider that randomizes whatever the current tab is about (its label names it: Chords, Progression, Play, Strum or Sound), undo, redo, Hold and settings.
   - A voice-trace scope, about 70 pt tall, that draws each voice's pitch over the last 3.5 s. It collapses to a slim bar with a chevron (remembered between sessions).
   - The 3×3 pads, about 31% of the screen height, between two vertical faders: Vibrato on the left and Top voice on the right. Each pad has a lock (top right) and a pencil (top left) that opens its editor.
-  - One die slider that randomizes whatever the current tab is about: Chords (unlocked pads), Progression, Play (playing-style settings), Strum (strum settings) or Sound.
 - **Bottom panes:** swiped or tapped from a tab strip. Palettes: Chords ember, Progression rose, Play lilac, Strum brass, Sound tide. Swiping blends the colours continuously; tapping a tab goes straight there, the new pane sliding in slightly while the colours fade from the old tab's palette to the new one, never through the tabs in between.
   - **Chords:** Key, Mode, Harmony, Complexity.
   - **Progression:** slot grid, play/stop, clear (with confirmation), BPM, Audio and MIDI export.
-  - **Play:** Style, Inversion and Voicing knobs; then Rhythm, and knobs for Gate, Accent, Swing, Notes, Broken and the arp's mode, rate and octaves.
-  - **Strum:** the strum strip, knobs for Timing, Octaves and Holds, the Y axis menu, and Inversion and Voicing (the same values as on Play).
+  - **Play:** half-width sliders in pairs (Style beside Rhythm, Inversion beside Voicing), knobs for Gate, Accent and Swing, and the arp's Mode, Rate, Octaves and Rests.
+  - **Strum:** the strum strip, knobs for Timing, Polyphony and Holds, the Y axis button, and Inversion and Voicing sliders (the same values as on Play).
   - **Sound:** preset, then compact knobs (value inside the ring) for oscillators, filter, the toggled envelope and tuning; glide and output knobs; the randomizer's Character.
 - **iPad landscape:** the pads on the left, the panes in a column on the right.
 
@@ -185,7 +184,7 @@ The screen splits in two. The top half is fixed and is where you play. The botto
   - The editor grows out of the pad into a centred card.
   - It shows the chord name (tap to hear it), the voiced notes, root and quality chips, and Clear.
 - **Die slider:**
-  - Drag the die right, or tap the track, to roll by that amount. The die rolls as it's dragged and tumbles home on release. Only a clean tap on the track rolls; a touch that moves (a scroll) does nothing.
+  - Drag the die right, or touch the track, to roll by that amount. Touching the track rolls the die straight to the finger, dragging adjusts, and letting go rolls. The die turns as it moves and tumbles home on release.
   - Hold the die and tap a pad or slot to roll just that one. On a pointer device, tap the die to arm it first.
   - Targets glow in the current tab's colour while the die is in use (locked ones stay dark), and whatever changed flashes.
 - **Progression slots:**
@@ -195,14 +194,16 @@ The screen splits in two. The top half is fixed and is where you play. The botto
   - Empty slots between chords hold the earlier chord and merge into its tile.
   - A new row of 3 appears once the last row fills.
 - **Faders:** double-tap resets. Top voice has a detent at centre.
-- **Style knob:** continuous across the enabled styles; each pure style holds a flat window of ±14% of the travel between neighbours, so it's easy to land on.
-- **Vibrato fader:** depth from off to ±60 cents (on a squared curve), with the rate rising from 3.5 Hz to 7 Hz as depth grows. A setting applies it to all notes (default) or the top voice only. Horizontal faders keep the whole touch: a mostly vertical move scrolls the pane, anything else drags (the browser cancelling these drags made Harmony and Complexity look stuck).
+- **Style slider:** a detent at every stop (up to ±3% of the travel, less when stops are close).
+- **Vibrato fader:** depth from off to ±80 cents (on a d^2.2 curve so the lower half stays subtle), with the rate rising from 3.5 Hz to 7.5 Hz as depth grows.
+- **Knobs** show their value inside the ring, everywhere. A setting applies it to all notes (default) or the top voice only. Horizontal faders keep the whole touch: a mostly vertical move scrolls the pane, anything else drags (the browser cancelling these drags made Harmony and Complexity look stuck).
 - **Strum tab:** pads only choose the strip's chord (they don't sound); the strip is the only thing that plays.
-  - The strip is horizontal, low notes left. Its cells are the chord's voicing with Voicing and Inversion applied (Top voice doesn't apply), repeated over 1–4 octaves, redrawn on every chord change.
+  - The strip is horizontal, low notes left. Its cells are the chord's voicing with Voicing and Inversion applied (Top voice doesn't apply), repeated over four octaves, redrawn on every chord change. Sliding a finger across the pads picks a new chord.
+  - Polyphony (1–10) limits how many strummed notes sound at once; past it, the oldest is cut. It applies only to the strip.
   - It plays like strings: a finger plucks the cell it touches and holds it at the sustain stage; moving on or lifting lets it ring out through the release. A fast sweep plucks every cell it crosses. Several fingers play at once.
   - Timing: Free, then note values from fastest to slowest (1/32, 1/16T, 1/16, 1/8T, 1/8); timed fingers sound on that grid.
   - Holds: Sustain (hold the note), Repeat (retrigger at the timing rate), or Arp (pluck every held cell in turn, in the order the fingers landed, at the timing rate; 1/16 when Free).
-  - Y axis: none, ↑ brightness, ↑ release, ↑ brightness ↑ release, or ↑ brightness ↓ release. An arrow points the way the value grows; ↓ release is shortest at the top.
+  - Y axis: a dialog lists velocity, brightness, resonance, attack, release, string bend (relative to where the finger landed, up to a whole tone), per-note vibrato, detune and octave double. Each can be off, ↑ (grows toward the top) or ↓ (grows toward the bottom). Rhythm doesn't apply to the strip.
   - While any finger is down the pad chord goes quiet and the performer pauses.
 - **Preset:** tap to open the list grouped by engine; drag still steps through it.
 - **Knobs:** drag vertically. Knobs for choices (waves, tables, filter type, engine) step through them and show the current one.
@@ -212,8 +213,8 @@ The screen splits in two. The top half is fixed and is where you play. The botto
 
 | Setting | Options | Default |
 | --- | --- | --- |
-| Styles on the Style knob | Pad, Stabs, Broken, Arp (at least one) | All |
-| Inversion knob / Voicing knob | Change live, next chord | Live / live |
+| Styles on the Style slider | Pad, Stabs, Broken, Arp (at least one) | All |
+| Inversion slider / Voicing slider | Change live, next chord | Live / live |
 | Fader glide times (knobs) | Top voice, Inversion, Voicing (0–1.5 s) | 0.2 s each |
 | Vibrato applies to | All notes, top voice only | All notes |
 | Top voice fader | Notes, notes + vibrato | Notes |
@@ -238,11 +239,11 @@ Project {
   prog[n]: Chord|null       progLocks[n]: bool     // n = rows x 3, minimum 9
   key, mode, chroma, complexity, bpm
   voicing, inversion, topVoice, glide, dev
-  perf { style, density, swing, gate, accent, notes, broken, arp, rate, oct }
+  perf { style (index into enabled STOPS), density, swing, gate, accent, arp, rate, oct, rests }
   synth { layers[1] { preset, oct, fine, ftype, cutoff, reso, fenv, aA,aD,aS,aR, fA,fD,fS,fR,
                       pAmt, pTime, e{ w1, w2, mix, detune, sub, noise } },
           width, reverb, volume, bend }
-  strumQ, strumOct, strumHold, strumY, vibDepth
+  strumQ, strumPoly, strumHold, strumY { param: 1 | -1 }, vibDepth
 }
 Prefs { styles enabled, live inversion/voicing, fader glides, topVib, glideMode, landMode, glideAll,
         slide, smartInv, arpReset, showDegree, scopeOpen, widthMode, vibAll }
